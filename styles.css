@@ -96,7 +96,7 @@
 @media screen and (max-width: 960px) {
     .navbar_container {
         display: flex;
-        justify-content: center;
+        justify-content:last center;
         height: 80px;
         z-index: 1;
         width: 100%;
@@ -172,6 +172,9 @@
 
     .navbar_icon .bar {
         display: block;
+    }
+    
+    .navbar_icon {
         cursor: pointer;
     }
 
