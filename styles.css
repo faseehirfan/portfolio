@@ -93,16 +93,16 @@
     transition: all 0.3s ease;
 }
 
-@media screen and (max-width: 960px) {
-    .navbar_container {
+@media screen and (max-width: 660px) {
+    /* .navbar_container {
         display: flex;
-        justify-content:last center;
+        justify-content: center;
         height: 80px;
         z-index: 1;
         width: 100%;
         max-width: 1300px;
         padding: 0; 
-    }
+    } */
     
     .navbar_menu {
         display: grid;
@@ -135,12 +135,18 @@
         font-size: 1.6rem;
     }
 
+
+    .navbar_icon {
+        cursor: pointer;
+    }
+
     .navbar_icon .bar {
         width: 25px;
         height: 3px;
         margin: 5px auto;
         transition: all 0.3s ease-in-out;
         background: #fff;
+        display: block;
     } 
 
     .navbar_links {
@@ -168,14 +174,6 @@
         top: 20%;
         right: 5%;
         transform: translate(5%, 20%);
-    }
-
-    .navbar_icon .bar {
-        display: block;
-    }
-    
-    .navbar_icon {
-        cursor: pointer;
     }
 
     #mobile-menu.is-active .bar:nth-child(1) {
