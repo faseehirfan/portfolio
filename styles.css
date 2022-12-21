@@ -9,15 +9,6 @@
 
 .navbar {
     background: #131313; 
-    background:
-    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
-    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
-    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
-    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
-    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
-    linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
-    background-color: #131313;
-    background-size: 20px 20px;
     height: 80px;
     display: flex;
     justify-content: center;
@@ -108,14 +99,6 @@
         display: grid;
         grid-template-columns: auto;
         margin: 0;
-        background:
-        linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
-        linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
-        linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
-        linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
-        linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
-        linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
-        background-color: #131313;
         background-size: 20px 20px;
         width: 100%;
         position: absolute;
@@ -126,12 +109,12 @@
     }
 
     .navbar_menu.active {
-        
+        background-color: #131313;
         top: 100%;
         opacity: 1;
         transition: all 0.5s ease;
-        z-index: 1;
-        height: 40vh;
+        z-index: 99;
+        height: 60vh;
         font-size: 1.6rem;
     }
 
@@ -161,8 +144,7 @@
     }
 
     .navbar_btn {
-        padding-top: 1rem;
-        padding-bottom: 3rem;
+        padding-bottom: 2rem;
     }
 
     .button {
@@ -170,7 +152,7 @@
         justify-content: center;
         align-items: center;
         width: 80%;
-        height: 90px;
+        height: 80px;
         margin: 0;
     }
 
