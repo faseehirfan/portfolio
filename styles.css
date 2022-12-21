@@ -8,7 +8,16 @@
 }
 
 .navbar {
-    background-color: #131313;
+    /* background-color: #131313; */
+    background:
+    linear-gradient(27deg, #151515 5px, transparent 5px) 0 5px,
+    linear-gradient(207deg, #151515 5px, transparent 5px) 10px 0px,
+    linear-gradient(27deg, #222 5px, transparent 5px) 0px 10px,
+    linear-gradient(207deg, #222 5px, transparent 5px) 10px 5px,
+    linear-gradient(90deg, #1b1b1b 10px, transparent 10px),
+    linear-gradient(#1d1d1d 25%, #1a1a1a 25%, #1a1a1a 50%, transparent 50%, transparent 75%, #242424 75%, #242424);
+  background-color: #131313;
+  background-size: 20px 20px;
     height: 80px;
     display: flex;
     justify-content: center;
@@ -22,7 +31,7 @@
 
 .navbar_container {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     height: 80px;
     z-index: 1;
     width: 100%;
@@ -31,21 +40,67 @@
     padding: 0 50px;
 }
 
-
-#navbar_logo{
-    background-color: #ff8177;
-    background-image: linear-gradient(to top, #ff0844 0%, #ffb199 100%);
-    background-size: 100%;
-    -webkit-background-clip: text;
-    -moz-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
+.navbar_menu {
     display: flex;
     align-items: center;
-    cursor: pointer;
-    text-decoration: none;
-    font-size: 2rem;
+    list-style: none;
 }
 
+.navbar_item {
+    height: 80px;
+}
 
+.navbar_links{
+    color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 125px;
+    text-decoration: none;
+    height: 100%;
+    transition: all 0.3s ease;
 
+}
+
+.navbar_btn {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 1rem;
+    width: 100%;
+}
+
+.button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    padding: 10px 20px;
+    height: 100%;
+    width: 100%;
+    border: none;
+    outline: none;
+    border-radius: 4px;
+    background: #f12711;
+    background: -webkit-linear-gradient(to right, #f5af19, #f12711);  
+    background: linear-gradient(to right, #f5af19, #f12711);
+    color: #fff;
+    transition: all 0.3s ease;
+}
+
+.navbar_links:hover {
+    color: #f12711;
+    transition: all 0.3s ease;
+}
+
+@media screen and (max-width: 960px) {
+    .navbar_container {
+        display: flex;
+        justify-content: center;
+        height: 80px;
+        z-index: 1;
+        width: 100%;
+        padding: 0; 
+    }
+    
+}
