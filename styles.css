@@ -93,8 +93,8 @@
     transition: all 0.3s ease;
 }
 
-@media screen and (max-width: 660px) {
-    /* .navbar_container {
+@media screen and (max-width: 780px) {
+    .navbar_container {
         display: flex;
         justify-content: center;
         height: 80px;
@@ -102,7 +102,7 @@
         width: 100%;
         max-width: 1300px;
         padding: 0; 
-    } */
+    }
     
     .navbar_menu {
         display: grid;
@@ -149,6 +149,10 @@
         display: block;
     } 
 
+    .navbar_item {
+        width: 100%;
+    }
+
     .navbar_links {
         text-align: center;
         padding: 2rem;
@@ -157,7 +161,8 @@
     }
 
     .navbar_btn {
-        padding-bottom: 2rem;
+        padding-top: 1rem;
+        padding-bottom: 3rem;
     }
 
     .button {
@@ -165,7 +170,7 @@
         justify-content: center;
         align-items: center;
         width: 80%;
-        height: 80px;
+        height: 90px;
         margin: 0;
     }
 
