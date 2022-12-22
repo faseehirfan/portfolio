@@ -175,3 +175,11 @@
         transform: translateY(-8px) rotate(-45deg);
     }
 }
+
+
+/* Hero Section */
+.hero {
+    background: #000000;
+    background: linear-gradient(to right, #161616, #000000);
+    padding: 200px 0;   
+}
