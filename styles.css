@@ -180,7 +180,7 @@
 .hero {
     background: #000000;
     background: linear-gradient(to right, #161616, #000000);
-    padding: 200px 0;   
+    padding: 100px 0;   
 }
 
 .hero_container {
@@ -352,8 +352,6 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    color: #fff;
-    background-image: linear-gradient(to right, red 0%, orange 100%);
 }
 
 /* Mobile Responsiveness */
@@ -389,7 +387,7 @@
     }
 
     .main_content h2 {
-        font-size: 2rem;
+        font-size: 2.5rem;
     }
 
     .main_content p {
@@ -403,7 +401,7 @@
         width: 250px;
         height: 250px;
     }
-    
+    b
     .main_content h1 {
         font-size: 2rem;  
         margin-top: 3rem;
