@@ -224,5 +224,18 @@
     -moz-background-clip: text;
     -webkit-text-fill-color: transparent;
     -moz-text-fill-color: transparent;
+}
 
+.highlight {
+    border-bottom: 4px solid rgb (132, 0, 255);
+}
+
+@media screen and (max-width: 768px) {
+    .hero_heading {
+        font-size: 60px;
+    }
+
+    .hero_description {
+        font-size: 40px;
+    }
 }
