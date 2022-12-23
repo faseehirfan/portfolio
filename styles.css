@@ -196,7 +196,7 @@
 }
 
 .hero_heading {
-    font-size: 100px;
+    font-size: 90px;
     margin-bottom: 24px;
     color: #fff;
 }
@@ -214,7 +214,7 @@
 }
 
 .hero_description {
-    font-size: 60px;
+    font-size: 50px;
     /*
     background: #ec008c;   fallback for old browsers 
     background: -webkit-linear-gradient(to right, #fc6767, #ec008c);   Chrome 10-25, Safari 5.1-6 
@@ -230,6 +230,47 @@
 
 .highlight {
     border-bottom: 4px solid rgb (132, 0, 255);
+}
+
+
+/* Social Icons */
+#social-icons {
+    margin-bottom: 1.2rem;
+}
+
+#social-icons a{
+    display: inline;
+}
+
+.fa {
+  padding: 20px;
+  width: 30px;
+  text-align: center;
+  text-decoration: none;
+  border-radius: 50%;
+}
+/* Add a hover effect if you want */
+.fa:hover {
+  opacity: 0.5;
+}
+
+/* Set a specific color for each brand */
+/* github */
+.fa-github {
+  background: transparent;
+  color: limegreen;
+}
+
+/* linkedin */
+.fa-linkedin {
+  background: transparent;
+  color: deepskyblue;
+}
+
+/* linkedin */
+.fa-google {
+  background: transparent;
+  color: red;
 }
 
 @media screen and (max-width: 768px) {
