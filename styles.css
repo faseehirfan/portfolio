@@ -201,7 +201,7 @@
     color: #fff;
 }
 
-.hero_heading span {
+.hero_heading div {
     background: #833ab4;  /* fallback for old browsers */
     background: -webkit-linear-gradient(to right, #fcb045, #fd1d1d, #833ab4);  /* Chrome 10-25, Safari 5.1-6 */
     background: linear-gradient(to right, #fcb045, #fd1d1d, #833ab4); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
@@ -215,15 +215,17 @@
 
 .hero_description {
     font-size: 60px;
-    background: #ec008c;  /* fallback for old browsers */
-    background: -webkit-linear-gradient(to right, #fc6767, #ec008c);  /* Chrome 10-25, Safari 5.1-6 */
-    background: linear-gradient(to right, #fc6767, #ec008c); /* W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
-
+    /*
+    background: #ec008c;   fallback for old browsers 
+    background: -webkit-linear-gradient(to right, #fc6767, #ec008c);   Chrome 10-25, Safari 5.1-6 
+    background: linear-gradient(to right, #fc6767, #ec008c);  W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ 
+    */
+    color: #fff;
     background-size: 100%;
-    -webkit-background-clip: text;  
+    /* -webkit-background-clip: text;  
     -moz-background-clip: text;
     -webkit-text-fill-color: transparent;
-    -moz-text-fill-color: transparent;
+    -moz-text-fill-color: transparent; */
 }
 
 .highlight {
@@ -238,4 +240,117 @@
     .hero_description {
         font-size: 40px;
     }
+}
+
+/* About Section */
+.main {
+    background-color: #131313;
+    padding: 10rem 0;
+}
+
+.main_container {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto;
+    height: 90%;
+    z-index: 1;
+    width: 100%;
+    max-width: 1300px;
+    padding: 0 50px;
+}
+
+.main_content {
+    color: #fff;
+    width: 100%;        
+}
+
+.main_content h1 {
+    font-size: 4rem;
+    background: #f12711;
+    background: -webkit-linear-gradient(to right, #f5af19, #f12711);  
+    background: linear-gradient(to right, #f5af19, #f12711);
+    background-size: 100%;
+    -webkit-background-clip: text;
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -moz-text-fill-color: transparent;
+    margin-bottom: 32px;
+}
+
+.main_content h2 {
+    font-size: 2rem;
+    margin-top: 1rem;
+    background: #ec008c;   /*fallback for old browsers*/ 
+    background: -webkit-linear-gradient(to right, #fc6767, #ec008c);   /*Chrome 10-25, Safari 5.1-6 */
+    background: linear-gradient(to right, #fc6767, #ec008c);  /*W3C, IE 10+/ Edge, Firefox 16+, Chrome 26+, Opera 12+, Safari 7+ */
+    color: #fff;
+    background-size: 100%;
+    -webkit-background-clip: text;  
+    -moz-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    -moz-text-fill-color: transparent; 
+}
+
+.main_content p {
+    font-size: 1rem;
+    font-weight: 700;
+}
+
+.main_btn {
+    font-size: 1.8rem;
+    background: #f12711;
+    background: -webkit-linear-gradient(to right, #f5af19, #f12711);  
+    background: linear-gradient(to right, #f5af19, #f12711);
+    padding: 20px 60px;
+    border: none;
+    border-radius: 4px;
+    color: #fff;
+    margin-top: 2rem;
+    cursor: pointer;
+    position: relative;
+    transition: all 0.35s;
+    outline: none;
+}
+
+.main_btn a {
+    position: relative;
+    z-index: 2;
+    color: #fff;
+    text-decoration: none;
+}
+
+.main_btn:after {
+    position: absolute;
+    content: '';
+    top: 0;
+    left: 0;
+    width: 0;   
+    height: 100%;
+    background: #ff1ead;
+    transition: all 0.35s;
+    border-radius: 4px;
+}
+
+.main_btn:hover {
+    color: #fff;
+}
+.main_btn:hover:after {
+    width: 100%;
+}
+
+.main_img_container {
+    text-align: center;
+}
+.main_img_card {
+    margin: 10px;
+    height: 500px;
+    width: 500px;
+    border-radius: 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    color: #fff;
+    background-image: linear-gradient(to right, red 0%, orange 100%);
 }
