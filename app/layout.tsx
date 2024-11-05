@@ -5,6 +5,7 @@ import { GeistSans } from "geist/font/sans";
 import type { Metadata } from "next";
 import Footer from "./components/footer";
 import { Navbar } from "./components/nav";
+import Particles from "./components/particles";
 import { ThemeProvider } from "./components/theme-switch";
 import { metaData } from "./config";
 import "./global.css";
@@ -81,6 +82,10 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
+          <Particles
+            className="absolute inset-0 -z-10 animate-fade-in"
+            quantity={500}
+          />
           <main className="flex-auto min-w-0 mt-2 md:mt-6 flex flex-col px-6 sm:px-4 md:px-0 max-w-[640px] w-full">
             <Navbar />
             {children}
