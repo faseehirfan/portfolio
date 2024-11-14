@@ -1,5 +1,5 @@
-import React from "react";
 import Image from "next/image";
+import React from "react";
 
 interface ImageGridProps {
   images: {
@@ -37,7 +37,7 @@ export const ImageGrid: React.FC<ImageGridProps> = ({
                   src={image.src}
                   fill
                   sizes="(max-width: 768px) 50vw, 33vw"
-                  priority
+                  loading="lazy"
                   className="rounded-lg object-cover"
                 />
               </a>
@@ -47,7 +47,7 @@ export const ImageGrid: React.FC<ImageGridProps> = ({
                 src={image.src}
                 fill
                 sizes="(max-width: 768px) 50vw, 33vw"
-                priority
+                loading="lazy"
                 className="rounded-lg object-cover"
               />
             )}
