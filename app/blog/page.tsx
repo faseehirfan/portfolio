@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export const metadata = {
   title: "Blog",
-  description: "Nextfolio Blog",
+  description: "Faseeh's Blog",
 };
 
 export default function BlogPosts() {
@@ -11,7 +11,7 @@ export default function BlogPosts() {
 
   return (
     <section>
-      <h1 className="mb-8 text-2xl font-medium tracking-tight">My Blogs</h1>
+      <h1 className="mb-8 text-2xl font-medium tracking-tight">Posts</h1>
       <div>
         {allBlogs
           .sort((a, b) => {
