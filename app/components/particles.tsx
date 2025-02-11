@@ -1,6 +1,7 @@
 "use client";
 import { useMousePosition } from "app/lib/mouse";
 import { useTheme } from "next-themes";
+import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 interface ParticlesProps {
   className?: string;
@@ -16,6 +17,10 @@ export default function Particles({
   ease = 50,
   refresh = false,
 }: ParticlesProps) {
+  const pathname = usePathname(); // Get the current route
+  // Conditionally render Particles based on the route
+  const shouldShowParticles = !pathname?.includes("/blog/");
+  if (!shouldShowParticles) return null;
   const { theme } = useTheme();
   const particleColor = useRef<string>("");
   const canvasRef = useRef<HTMLCanvasElement>(null);
