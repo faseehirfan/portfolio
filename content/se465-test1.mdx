@@ -12,6 +12,8 @@ tags: "SE465"
 - [Lecture 4 - Mutation Analysis](#lecture-4-mutation-analysis)
 - [Lecture 5 - Syntax and Semantics](#lecture-5-syntax-and-semantics)
 
+---
+
 # Lecture 2 - Engineering Tests
 
 **Date:** *January 8, 2025*  
@@ -522,7 +524,7 @@ $$
 #### 2. Print State
 
 $$
-\langle \text{print_state}, q \rangle \Downarrow q
+\langle \text{print\_state}, q \rangle \Downarrow q
 $$
 
 - The `print_state` statement does not modify the state but may have the side effect of printing the state.
@@ -530,7 +532,7 @@ $$
 #### 3. Statement Composition
 
 $$
-langle s_1, q \rangle \Downarrow q'' \quad \langle s_2, q'' \rangle \Downarrow q' \over \langle s_1; s_2, q \rangle \Downarrow q'
+\langle s_1, q \rangle \Downarrow q'' \quad \langle s_2, q'' \rangle \Downarrow q' \over \langle s_1; s_2, q \rangle \Downarrow q'
 $$
 
 - The composition $ s_1; s_2 $ executes $ s_1 $ first, resulting in state $ q'' $, and then executes $ s_2 $ in state $ q'' $, resulting in the final state $ q' $.
@@ -546,7 +548,7 @@ $$
 #### 5. If-Then-Else Statement
 
 $$
-\langle b, q \rangle \Downarrow \text{true} \quad \langle s_1, q \rangle \Downarrow q' \over \langle \text{if} b \text{then} s_1 \text{else} s_2, q \rangle \Downarrow q'
+\langle b, q \rangle \Downarrow \text{true} \quad \langle s_1, q \rangle \Downarrow q' \over \langle \text{if } b \text{ then } s_1 \text{ else } s_2, q \rangle \Downarrow q'
 $$
 
 - If the condition $ b $ evaluates to `true`, the `if` statement executes $ s_1 $ and results in state $ q' $.
@@ -569,17 +571,17 @@ We can derive its execution as follows:
 
 1. Evaluate $ p := 0 $ in the empty state $ [] $:
    $$
-   \langle 0, [] \rangle \Downarrow 0 \quad \langle p := 0, [] \rangle \Downarrow [p := 0]
+   \langle 0, [] \rangle \Downarrow 0 \over \langle p := 0, [] \rangle \Downarrow [p := 0]
    $$
 
 2. Evaluate $ x := 1 $ in the state $ [p := 0] $:
    $$
-   \langle 1, [p := 0] \rangle \Downarrow 1 \quad \langle x := 1, [p := 0] \rangle \Downarrow [p := 0, x := 1]
+   \langle 1, [p := 0] \rangle \Downarrow 1 \over \langle x := 1, [p := 0] \rangle \Downarrow [p := 0, x := 1]
    $$
 
 3. Evaluate $ n := 2 $ in the state $ [p := 0, x := 1] $:
    $$
-   \langle 2, [p := 0, x := 1] \rangle \Downarrow 2 \quad \langle n := 2, [p := 0, x := 1] \rangle \Downarrow [p := 0, x := 1, n := 2]
+   \langle 2, [p := 0, x := 1] \rangle \Downarrow 2 \over \langle n := 2, [p := 0, x := 1] \rangle \Downarrow [p := 0, x := 1, n := 2]
    $$
 
 4. The final state after executing the compound statement is:
