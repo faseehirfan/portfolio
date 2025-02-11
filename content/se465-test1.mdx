@@ -10,6 +10,7 @@ tags: "SE465"
 - [Lecture 2 - Engineering Tests](#lecture-2-engineering-tests)
 - [Lecture 3 - Coverage and Fuzzing](#lecture-3-coverage-and-fuzzing)
 - [Lecture 4 - Mutation Analysis](#lecture-4-mutation-analysis)
+- [Lecture 5 - Syntax and Semantics](#lecture-5-syntax-and-semantics)
 
 # Lecture 2 - Engineering Tests
 
@@ -303,5 +304,469 @@ mutant, since `a = minVal`. (The infection condition boils down to `false` .)
 - **Statement and branch coverage alone are weak indicators of test quality.**
 - **Mutation testing is computationally expensive but provides deep insights into test suite strength.**
 
-## [Add More Lecture Summaries Below]
+---
 
+# Lecture 5 - Syntax and Semantics
+
+**Date:** *January 20, 2025*
+
+> **Note:** This lecture is a pain in the ass. Consider skipping.
+
+## Operational Semantics
+
+- **SE 212 Recap:** Axiomatic semantics is used to prove program correctness.
+- **Alternative approaches:**
+  - **Operational Semantics** (used in this course) describes how a program executes step-by-step.
+  - **Denotational Semantics** maps programs to mathematical objects.
+
+## The WHILE Language
+
+A simplified imperative language used for reasoning about code.
+
+### Example Program
+```while
+{ p := 0; x := 1; n := 2 };
+
+while x <= n do {
+    x := x + 1;
+    p := p + m
+};
+
+print_state
+```
+- Statements are **separated** by `;` (not terminated like in C).
+- Variables are implicitly declared.
+- No side effects in expressions—effects occur only in statements.
+
+### Syntax Overview
+
+#### **Terminals (Leaf Nodes)**
+- `n ∈ Z`: integers
+- `true, false ∈ B`: Boolean values
+- `x, y ∈ L`: variable locations
+
+#### **Non-Terminals (Internal Nodes)**
+- `a ∈ Aexp`: arithmetic expressions
+- `b ∈ Bexp`: Boolean expressions
+- `s ∈ Stmt`: statements
+
+### **Grammar Rules**
+#### **Arithmetic Expressions**
+```plaintext
+e ::= n | x | -e | e1 aop e2 | (e)
+
+aop ::= + | - | *
+```
+
+#### **Boolean Expressions**
+```plaintext
+b ::= true | false | not b | e1 rop e2 | b1 bop b2 | (b)
+
+rop ::= < | <= | = | >= | >
+bop ::= and | or
+```
+
+#### **Statements**
+```plaintext
+s ::= skip | x:=e | if b then s [else s] | while b do s | { slist } | print_state | assert b | assume b | havoc v1, ..., vN
+
+slist ::= s (;s)*
+
+prog ::= slist
+```
+
+## **Operational Semantics: Big-Step**
+Defines how program execution **transforms** a state.
+A state `q` is a mapping from variables to values.
+Judgments are written as:
+
+    $$
+        \langle e, q \rangle \Downarrow n
+    $$
+<Caption>
+Expression e in state q evaluates to value n.
+</Caption>
+
+For statements, the notation is:
+
+$$
+\langle s, q \rangle \Downarrow q'
+$$
+
+<Caption>
+statement s executed in state q results in state q′.
+</Caption>
+  
+
+### Rules for Arithmetic Expressions (Aexp)
+
+The semantics for arithmetic expressions in WHILE are defined using inference rules. Here are the rules:
+
+#### 1. Constants
+
+$$
+\langle n, q \rangle \Downarrow n
+$$
+
+- A constant $ n $ evaluates to itself.
+
+#### 2. Variables
+
+$$
+\langle x, q \rangle \Downarrow q(x)
+$$
+
+- A variable $ x $ evaluates to its value in the current state $ q $.
+
+#### 3. Addition
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 + e_2, q \rangle \Downarrow n_1 + n_2
+$$
+
+- The sum of two expressions $ e_1 $ and $ e_2 $ evaluates to the sum of their values.
+
+#### 4. Subtraction
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 - e_2, q \rangle \Downarrow n_1 - n_2
+$$
+
+- The difference of two expressions $ e_1 $ and $ e_2 $ evaluates to the difference of their values.
+
+#### 5. Multiplication
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 * e_2, q \rangle \Downarrow n_1 * n_2
+$$
+
+- The product of two expressions $ e_1 $ and $ e_2 $ evaluates to the product of their values.
+
+### Rules for Boolean Expressions (Bexp)
+
+Boolean expressions are built on top of arithmetic expressions. Here are the rules:
+
+#### 1. True and False
+
+$$
+\langle \text{true}, q \rangle \Downarrow \text{true}
+$$
+$$
+\langle \text{false}, q \rangle \Downarrow \text{false}
+$$
+
+- The constants `true` and `false` evaluate to themselves.
+
+#### 2. Equality
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 = e_2, q \rangle \Downarrow n_1 = n_2
+$$
+
+- The equality of two expressions $ e_1 $ and $ e_2 $ evaluates to whether their values are equal.
+
+#### 3. Less Than or Equal
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 \le e_2, q \rangle \Downarrow n_1 \leq n_2
+$$
+
+- The less-than-or-equal comparison of two expressions $ e_1 $ and $ e_2 $ evaluates to whether $ n_1 $ is less than or equal to $ n_2 $.
+
+#### 4. Logical AND
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 \text{ and } e_2, q \rangle \Downarrow n_1 \land n_2
+$$
+
+- The logical AND of two expressions $ e_1 $ and $ e_2 $ evaluates to the logical conjunction of their values.
+
+#### 5. Logical OR
+
+$$
+\langle e_1, q \rangle \Downarrow n_1 \quad \langle e_2, q \rangle \Downarrow n_2 \over \langle e_1 \text{ or } e_2, q \rangle \Downarrow n_1 \lor n_2
+$$
+
+- The logical OR of two expressions $ e_1 $ and $ e_2 $ evaluates to the logical disjunction of their values.
+
+## Rules for Statements
+
+In big-step semantics, statements transform the state of the program. The notation is:
+
+$$
+\langle s, q \rangle \Downarrow q'
+$$
+
+- **$ s $**: The statement to be executed.
+- **$ q $**: The initial state.
+- **$ q' $**: The final state after executing $ s $.
+
+### Notation
+
+- **Empty state**: $ [] $
+- **Example state**: $ [x := 10; y := 15; z := 5] $
+- **Substitution**: $ q[x := 10] $ (yields a state like $ q $ but with $ x $ bound to $ 10 $).
+
+### Rules for Evaluating Statements
+
+Statements have side effects because they modify the state rather than directly returning a value. Here are the rules for evaluating statements in WHILE:
+
+#### 1. Skip Statement
+
+$$
+\langle \text{skip}, q \rangle \Downarrow q
+$$
+
+- The `skip` statement does nothing. It simply returns the same state $ q $.
+
+#### 2. Print State
+
+$$
+\langle \text{print_state}, q \rangle \Downarrow q
+$$
+
+- The `print_state` statement does not modify the state but may have the side effect of printing the state.
+
+#### 3. Statement Composition
+
+$$
+langle s_1, q \rangle \Downarrow q'' \quad \langle s_2, q'' \rangle \Downarrow q' \over \langle s_1; s_2, q \rangle \Downarrow q'
+$$
+
+- The composition $ s_1; s_2 $ executes $ s_1 $ first, resulting in state $ q'' $, and then executes $ s_2 $ in state $ q'' $, resulting in the final state $ q' $.
+
+#### 4. Assignment
+
+$$
+\langle e, q \rangle \Downarrow n \over \langle x := e, q \rangle \Downarrow q[x := n]
+$$
+
+- The assignment statement $ x := e $ evaluates the expression $ e $ to $ n $ and updates the state $ q $ so that $ x $ is bound to $ n $.
+
+#### 5. If-Then-Else Statement
+
+$$
+\langle b, q \rangle \Downarrow \text{true} \quad \langle s_1, q \rangle \Downarrow q' \over \langle \text{if} b \text{then} s_1 \text{else} s_2, q \rangle \Downarrow q'
+$$
+
+- If the condition $ b $ evaluates to `true`, the `if` statement executes $ s_1 $ and results in state $ q' $.
+
+$$
+\frac{\langle b, q \rangle \Downarrow \text{false} \quad \langle s_2, q \rangle \Downarrow q'}{\langle \text{if } b \text{ then } s_1 \text{ else } s_2, q \rangle \Downarrow q'}
+$$
+
+- If the condition $ b $ evaluates to `false`, the `if` statement executes $ s_2 $ and results in state $ q' $.
+
+### Example of Evaluating Statements
+
+Consider the compound statement:
+
+$$
+p := 0; x := 1; n := 2
+$$
+
+We can derive its execution as follows:
+
+1. Evaluate $ p := 0 $ in the empty state $ [] $:
+   $$
+   \langle 0, [] \rangle \Downarrow 0 \quad \langle p := 0, [] \rangle \Downarrow [p := 0]
+   $$
+
+2. Evaluate $ x := 1 $ in the state $ [p := 0] $:
+   $$
+   \langle 1, [p := 0] \rangle \Downarrow 1 \quad \langle x := 1, [p := 0] \rangle \Downarrow [p := 0, x := 1]
+   $$
+
+3. Evaluate $ n := 2 $ in the state $ [p := 0, x := 1] $:
+   $$
+   \langle 2, [p := 0, x := 1] \rangle \Downarrow 2 \quad \langle n := 2, [p := 0, x := 1] \rangle \Downarrow [p := 0, x := 1, n := 2]
+   $$
+
+4. The final state after executing the compound statement is:
+   $$
+   \langle p := 0; x := 1; n := 2, [] \rangle \Downarrow [p := 0, x := 1, n := 2]
+   $$
+
+### Semantics of Loops
+
+The semantics of the `while` statement are defined in two parts:
+
+#### 1. Loop Condition is False
+
+$$
+\frac{\langle b, q \rangle \Downarrow \text{false}}{\langle \text{while } b \text{ do } s, q \rangle \Downarrow q}
+$$
+
+- If the loop condition $ b $ evaluates to `false`, the `while` statement is equivalent to `skip` and does not modify the state.
+
+#### 2. Loop Condition is True
+
+$$
+\frac{\langle b, q \rangle \Downarrow \text{true} \quad \langle s; \text{while } b \text{ do } s, q \rangle \Downarrow q'}{\langle \text{while } b \text{ do } s, q \rangle \Downarrow q'}
+$$
+
+- If the loop condition $ b $ evaluates to `true`, the body $ s $ is executed once, and then the `while` loop is executed again in the new state.
+
+#### Non-Terminating Loops
+
+For infinite loops, we introduce a special state $ \top $ (read as "top") to represent divergence:
+
+$$
+\langle \text{while true do } s, q \rangle \Downarrow \top
+$$
+
+- An infinite loop enters the state $ \top $, and any statement executed in this state remains in $ \top $:
+  $$
+  \langle s, \top \rangle \Downarrow \top
+  $$
+
+- But we don’t get any insight into what happens. Thats where small-step semantics come in to deal with programs that don’t terminate, but produce useful side effects while they are executing.
+
+### Deterministic Semantics
+
+A semantics is **deterministic** if every program statement has at most one possible derivation in any state:
+
+$$
+\text{if } \langle s, q \rangle \Downarrow q_1 \text{ and } \langle s, q \rangle \Downarrow q_2 \text{ then } q_1 = q_2.
+$$
+
+Two statements are **semantically equivalent** if they produce the same output state given the same input state:
+
+$$
+s_1 \text{ and } s_2 \text{ are semantically equivalent if } \forall q. \langle s_1, q \rangle \Downarrow q_1 \text{ and } \langle s_2, q \rangle \Downarrow q_2 \text{ implies } q_1 = q_2.
+$$
+
+For example, unrolling a `while` loop yields a semantically equivalent statement:
+
+$$
+\text{while } b \text{ do } s \text{ is equivalent to } \text{if } b \text{ then } (s; \text{while } b \text{ do } s) \text{ else skip}.
+$$
+
+### Structural Induction
+
+To prove a property $ P $ on all possible derivation trees (e.g., for semantics), we use **structural induction**:
+
+- **Base case**: Prove $ P $ for all axioms.
+- **Inductive case**: Assume $ P $ holds for all smaller derivation trees and show that $ P $ continues to hold when applying each possible rule once.
+
+For example, we can prove that the semantics are deterministic using structural induction.
+
+## **Operational Semantics: Small-Step**
+Describes **intermediate** execution steps instead of final results.
+
+Judgments are written as:
+    $$
+        \langle s, q \rangle \Rightarrow \langle t, q' \rangle
+    $$
+
+- **$ s $**: The current program (or statement) to be executed.
+- **$ q $**: The current state (or store) of the program.
+- **$ t $**: The remaining program (or statement) after executing one step of $ s $.
+- **$ q' $**: The new state after executing one step of $ s $.
+
+If there is no more program left to execute after $ s $, the notation simplifies to:
+
+$$
+\langle s, q \rangle \Rightarrow q'
+$$
+  
+    > Essentially peeling off the first statement from s, which
+    we execute, and we have a remaining program t to execute
+
+
+### Rules in Small-Step Semantics
+
+The rules provided in the section describe how different constructs in the WHILE language are executed step-by-step:
+
+#### 1. Skip Statement
+
+$$
+\langle \text{skip}, q \rangle \Rightarrow q
+$$
+
+- The $skip$ statement does nothing. It simply transitions to the same state $q$ with no further program to execute.
+
+#### 2. Sequential Composition
+
+$$
+\langle s_1, q \rangle \Rightarrow q' \over \langle s_1; s_2, q \rangle \Rightarrow \langle s_2, q' \rangle
+$$
+
+- If executing $s_1$ in state $q$ results in state $q'$, then the program $s_1; s_2$ (which means "execute $s_1$ followed by $s_2$") reduces to $s_2$ in state $q'$.
+
+Alternatively, if $s_1$ reduces to another statement $s_3$:
+
+$$
+\langle s_1, q \rangle \Rightarrow \langle s_3, q' \rangle \over \langle s_1; s_2, q \rangle \Rightarrow \langle s_3; s_2, q' \rangle
+$$
+
+- Here, $s_1$ is not fully executed yet, so the remaining program is $s_3; s_2$.
+
+#### 3. If-Then-Else Statement
+
+$$
+\langle b, q \rangle \Downarrow \text{true} \over \langle \text{ if } b \text{ then } s_1 \text{ else } s_2, q \rangle \Rightarrow \langle s_1, q \rangle
+$$
+
+- If the condition $b$) evaluates to `true`, then the `if` statement reduces to $s_1$ (the "then" branch).
+
+Similarly, if $b$ evaluates to `false`:
+
+$$
+\frac{\langle b, q \rangle \Downarrow \text{false}}{\langle \text{if } b \text{ then } s_1 \text{ else } s_2, q \rangle \Rightarrow \langle s_2, q \rangle}
+$$
+
+- If the condition $b$ evaluates to `false`, the `if` statement reduces to $s_2$ (the "else" branch).
+
+#### 4. While Loop
+
+$$
+\langle \text{while } b \text{ do } s, q \rangle \Rightarrow \langle \text{if } b \text{ then } (s; \text{while } b \text{ do } s) \text{ else skip}, q \rangle
+$$
+
+- The `while` loop is transformed into an `if` statement. If the condition $b$ is `true`, the loop body $s$ is executed, followed by the `while` loop again. If $b$ is `false`, the loop reduces to `skip`.
+
+### Example of Small-Step Execution
+
+Consider the program:
+
+$$
+\text{while } x > 0 \text{ do } x := x - 1
+$$
+
+In small-step semantics, the execution would proceed as follows:
+
+1. The `while` loop is transformed into an `if` statement:
+   $$
+   \langle \text{while } x > 0 \text{ do } x := x - 1, q \rangle \Rightarrow \langle \text{if } x > 0 \text{ then } (x := x - 1; \text{while } x > 0 \text{ do } x := x - 1) \text{ else skip}, q \rangle
+   $$
+
+2. If $ x > 0 $ is `true`, the program reduces to:
+   $$
+   \langle x := x - 1; \text{while } x > 0 \text{ do } x := x - 1, q \rangle
+   $$
+
+3. The assignment $ x := x - 1 $ is executed, updating the state $ q $, and the loop continues.
+
+This step-by-step reduction continues until $ x > 0 $ becomes `false`, at which point the loop reduces to `skip`.
+
+
+## **Assertions, Assumptions, and Specification**
+- `assert`: Ensures a condition holds at a program point.
+- `assume`: Restricts program execution to cases where a condition is true.
+- `havoc`: Assigns arbitrary values to variables, modeling unknown inputs.
+
+### **Example (Symbolic Execution)**
+```c
+havoc(x);
+assume(x > 10);
+y = x + 1;
+assert(y > x);
+assert(y < 200);
+```
+- Ensures `y > x` always holds but does **not** guarantee `y < 200`.
+
+## **Key Takeaways**
+- **Big-Step Semantics**: Describes how a program executes in a single step.
+- **Small-Step Semantics**: Defines transitions between intermediate execution states.
+- **Assertions & Assumptions**: Help model program correctness and symbolic execution.
