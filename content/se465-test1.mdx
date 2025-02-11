@@ -5,11 +5,17 @@ summary: "A comprehensive study guide for the SE465 Test 1 exam."
 tags: "SE465"
 ---
 
-## Lecture 2 - Engineering Tests
+# Quick Links
+
+- [Lecture 2 - Engineering Tests](#lecture-2-engineering-tests)
+- [Lecture 3 - Coverage and Fuzzing](#lecture-3-coverage-and-fuzzing)
+- [Lecture 4 - Mutation Analysis](#lecture-4-mutation-analysis)
+
+# Lecture 2 - Engineering Tests
 
 **Date:** *January 8, 2025*  
 
-### Why Tests?
+## Why Tests?
 
 - Tests provide assurance that code works.
 - Automated tests allow for faster feedback compared to manual testing.
@@ -17,7 +23,7 @@ tags: "SE465"
 - Code that lasts years without tests will accumulate bugs unnoticed.
 - **Key takeaway:** If it matters that the code works, write a test for it.
 
-### Exploratory Testing
+## Exploratory Testing
 
 - Typically done by dedicated testers, but useful for developers as well.
 - **Exploratory testing = Learning + Test Design + Execution**.
@@ -29,22 +35,21 @@ tags: "SE465"
   - Finding the most critical bug quickly.
   - Evaluating risks before writing scripted tests.
 
-#### Process:
+### Process:
 1. Define a **charter** (broad testing goal).
 2. Choose an area of the software to test.
 3. Design a test informally.
 4. Execute and log findings.
 5. Repeat as needed.
 
-### Regression Testing
+## Regression Testing
 
 Ensures that new changes **don’t break existing functionality**.
   - **Automated**: Manual regression testing is inefficient.
   - **Optimally sized**: Too few = missed bugs, too many = slow execution.
   - **Up-to-date**: Must match the current version of the software.
 
-#### Automating Regression Tests
-
+Automating Regression Tests
 - Input:
   - File-based inputs simplify regression testing.
   - UI-based tests often use event capture and replay.
@@ -52,21 +57,13 @@ Ensures that new changes **don’t break existing functionality**.
   - Comparing screenshots (e.g., Mozilla's testing of Gecko engine) is problematic due to **nondeterminism**.
   - A more reliable approach is **logging-based verification**.
 
-### Industrial Best Practices
-
-- **Unit Tests:** Every class/module has associated tests.
-- **Code Reviews:** Required before merging.
-- **Continuous Integration (CI):** Run tests on every commit.
-- **One-Click Deployments:** Deploy automatically if tests pass.
-- **Rollback Support:** Ability to revert changes quickly.
-
-### Unit Testing
+## Unit Testing
 
 - **Focuses on individual components** (functions, classes, or modules).
 - **Must be fast** to execute.
 - Use **mocks** and **stubs** to isolate components.
 
-#### Example Test Structure (NUnit - C#)
+### Example Test Structure (NUnit - C#)
 ```csharp
 [Test]
 public void GetMinimum_UnsortedArray_ReturnsSmallestValue() {
@@ -80,7 +77,7 @@ public void GetMinimum_UnsortedArray_ReturnsSmallestValue() {
   2. **Act** - Execute the function.
   3. **Assert** - Verify the output.
 
-### Flaky Tests
+## Flaky Tests
 
 - **Flaky tests fail inconsistently**.
 - **Common causes:**
@@ -89,7 +86,7 @@ public void GetMinimum_UnsortedArray_ReturnsSmallestValue() {
   3. Test order dependencies (tests rely on prior tests).
 - **Fixes:** Use explicit waits instead of `sleep()`, proper locking mechanisms, and independent test cases.
 
-### Test Doubles
+## Test Doubles
 
 - Used to **isolate dependencies** in unit tests.
 - Types:
@@ -99,7 +96,7 @@ public void GetMinimum_UnsortedArray_ReturnsSmallestValue() {
   - **Mocks**: Verify method calls and behavior.
   - **Spies**: Record interactions but wrap real objects.
 
-### Mocking Example (jMock - Java)
+## Mocking Example (jMock - Java)
 ```java
 Mock warehouse = mock(Warehouse.class);
 Mock mailer = mock(MailService.class);
@@ -107,7 +104,7 @@ order.setMailer((MailService) mailer.proxy());
 mailer.expects(once()).method("send");
 ```
 
-### Key Takeaways
+## Key Takeaways
 
 - **Testing is essential** for maintainable software.
 - **Automate everything**: Regression tests should always be automated.
@@ -117,12 +114,11 @@ mailer.expects(once()).method("send");
 
 ---
 
-## Lecture 3 - Coverage and Fuzzing
+# Lecture 3 - Coverage and Fuzzing
 
 **Date:** *January 13, 2025*  
-**Author:** *Patrick Lam*
 
-### Control-Flow Graph (CFG)
+## Control-Flow Graph (CFG, very brief refer to notes for examples)
 
 A CFG is a graphical representation of the flow of control in a program.
 
@@ -137,7 +133,7 @@ A CFG is a graphical representation of the flow of control in a program.
 5. **Optimizations:** Apply optimizations to the CFG.
 6. **Code Generation:** Convert the CFG into bytecode or machine code.
 
-### Basic Blocks
+## Basic Blocks
 
 A sequence of instructions with one entry point and one exit point.
 
@@ -145,7 +141,7 @@ A sequence of instructions with one entry point and one exit point.
 
 **Example:** In a loop, the body of the loop forms a basic block.
 
-### Statement & Branch Coverage
+## Statement & Branch Coverage
 
 - **Statement Coverage:** Fraction of statements (nodes) executed by the test suite.
 - **Branch Coverage:** Fraction of branches (edges) taken by the test suite.
@@ -187,22 +183,22 @@ class CoverageTests(unittest.TestCase):
 ```
 - **Coverage Report:** The test suite achieves 100% statement coverage but only 75% branch coverage because it doesn't cover the case where both `a` and `b` are negative.
 
-### Fuzzing
+## Fuzzing
 
 Fuzzing is a technique for finding software bugs by feeding random or semi-random inputs to a program.
 
-#### Types of Fuzzing:
+### Types of Fuzzing:
 
 1. **Mutation-Based Fuzzing:** Randomly modifies existing inputs.
 2. **Generation-Based Fuzzing:**  Generates inputs based on a grammar or model.
 
-#### Fuzzing Workflow
+### Fuzzing Workflow
 
 1. Generate random inputs.
 2. Feed inputs to the program.
 3. Observe crashes, assertion failures, or runtime errors.
 
-#### Levels of Fuzzing (for C Programs)
+### Levels of Fuzzing (for C Programs)
 
 1. Sequence of ASCII characters;
 2. Sequence of words, separators, and white space (gets past the lexer);
@@ -215,7 +211,7 @@ Fuzzing is a technique for finding software bugs by feeding random or semi-rando
 Fuzzing runs automatically and really works, but without significant work, it won’t find sophisticated domain-specific issues.
 
 
-### Key Takeaways
+## Key Takeaways
 
 - **Code Coverage:** Use statement and branch coverage to ensure that your tests are comprehensive and target critical paths in your code.
 
@@ -225,5 +221,87 @@ Fuzzing runs automatically and really works, but without significant work, it wo
 
 ---
 
-### [Add More Lecture Summaries Below]
+# Lecture 4 - Mutation Analysis
+
+**Date:** *January 15, 2025*  
+
+Mutation analysis helps determine if a test suite is effective by checking whether it detects small changes (mutations) in the code. These changes, called *mutants*, simulate real-world programming mistakes.
+
+## Concept
+
+- A **mutant** is a modified version of the original program.
+- A **test suite** is considered effective if it can **kill** mutants, meaning the output of the test differs when run on the mutant versus the original.
+- Mutation analysis is essentially **fuzzing the test suite** to ensure it catches errors.
+
+## Example of Mutants
+
+### Original Code
+```c
+int min(int a, int b) {
+    int minVal = a;
+    if (b < a) {
+        minVal = b;
+    }
+    return minVal;
+}
+```
+
+### Mutant Variations
+```c
+minVal = b;       // ∆ 1
+if (b > a) {      // ∆ 2
+if (b < minVal) { // ∆ 3
+BOMB();           // ∆ 4
+minVal = a;       // ∆ 5
+minVal = failOnZero(b); // ∆ 6
+```
+
+- **Test Case Example:** A test suite with `(a=0, b=1, expected=0)` might detect some mutants but miss others.
+- **Equivalent Mutants:** Some mutants don’t change behavior, making them undetectable. (∆ 3)
+
+## Mutation Analysis Workflow
+
+1. **Generate Mutants** - Apply mutation operators (small code changes) to create mutants.
+2. **Execute Mutants** - Run the test suite on each mutant.
+3. **Classify Mutants**:
+   - *Killed*: The test suite detects the mutation.
+   - *Survived*: The test suite fails to detect the change.
+   - *Equivalent*: The mutant behaves identically to the original.
+
+## Generating Mutants
+
+- **Ground String**: A valid program belonging to the programming language grammar.
+- **Mutation Operators:** Rules that specify syntactic variations of strings generated
+from a grammar:
+  - **Arithmetic operator replacement** (`+` → `-`, `*` → `/`)
+  - **Logical connector replacement** (`&&` → `||`)
+  - **Relational operator replacement** (`>` → `>=`, `<` → `<=`)
+  - **Unary operator deletion** (`!x` → `x`)
+  - **Statement removal**
+- **Mutant**: The result of applying a mutation operator to a ground string.
+- **Mutation Score**: The percentage of killed mutants over total mutants.
+- **Strong vs. Weak Mutation**:
+  - *Strong*: The test must propagate the error to the output.
+  - *Weak*: The test must only cause an internal state change.
+
+Let’s consider mutant ∆1 from above, i.e. we change `minVal = a` to `minVal = b`. In this case:
+
+- reachability: unavoidable;
+- infection: need `b  != a`;
+- propagation: wrong minVal needs to return to the caller; that is, we can’t execute the body
+of the if statement, so we need `b > a`.
+
+A test case for strong mutation is therefore `a = 5`, `b = 7` and for weak mutation `a = 7`, `b = 5`.
+
+Now consider mutant ∆3, which replaces `b < a` with `b < minVal`. This mutant is an equivalent
+mutant, since `a = minVal`. (The infection condition boils down to `false` .)
+
+## Key Takeaways
+
+- **Mutation analysis evaluates the effectiveness of test suites.**
+- **Good test suites kill a high percentage of mutants.**
+- **Statement and branch coverage alone are weak indicators of test quality.**
+- **Mutation testing is computationally expensive but provides deep insights into test suite strength.**
+
+## [Add More Lecture Summaries Below]
 
