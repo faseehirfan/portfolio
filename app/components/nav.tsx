@@ -4,8 +4,8 @@ import { ThemeSwitch } from "./theme-switch";
 
 const navItems = {
   "/blog": { name: "Blog" },
-  "/projects": { name: "Projects" },
-  "/photos": { name: "Photos" },
+  // "/projects": { name: "Projects" },
+  // "/photos": { name: "Photos" },
 };
 
 export function Navbar() {
