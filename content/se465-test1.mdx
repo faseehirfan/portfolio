@@ -1,0 +1,229 @@
+---
+title: "SE465 Test 1 Study Guide"
+publishedAt: "2025-02-10"
+summary: "A comprehensive study guide for the SE465 Test 1 exam."
+tags: "SE465"
+---
+
+## Lecture 2 - Engineering Tests
+
+**Date:** *January 8, 2025*  
+
+### Why Tests?
+
+- Tests provide assurance that code works.
+- Automated tests allow for faster feedback compared to manual testing.
+- Not writing tests incurs **technical debt**, making future maintenance harder.
+- Code that lasts years without tests will accumulate bugs unnoticed.
+- **Key takeaway:** If it matters that the code works, write a test for it.
+
+### Exploratory Testing
+
+- Typically done by dedicated testers, but useful for developers as well.
+- **Exploratory testing = Learning + Test Design + Execution**.
+- **Contrasted with scripted testing:**
+  - Scripted testing follows predefined steps.
+  - Exploratory testing adapts based on findings.
+- **Best for:**
+  - Rapid feedback on new features.
+  - Finding the most critical bug quickly.
+  - Evaluating risks before writing scripted tests.
+
+#### Process:
+1. Define a **charter** (broad testing goal).
+2. Choose an area of the software to test.
+3. Design a test informally.
+4. Execute and log findings.
+5. Repeat as needed.
+
+### Regression Testing
+
+Ensures that new changes **don’t break existing functionality**.
+  - **Automated**: Manual regression testing is inefficient.
+  - **Optimally sized**: Too few = missed bugs, too many = slow execution.
+  - **Up-to-date**: Must match the current version of the software.
+
+#### Automating Regression Tests
+
+- Input:
+  - File-based inputs simplify regression testing.
+  - UI-based tests often use event capture and replay.
+- Output:
+  - Comparing screenshots (e.g., Mozilla's testing of Gecko engine) is problematic due to **nondeterminism**.
+  - A more reliable approach is **logging-based verification**.
+
+### Industrial Best Practices
+
+- **Unit Tests:** Every class/module has associated tests.
+- **Code Reviews:** Required before merging.
+- **Continuous Integration (CI):** Run tests on every commit.
+- **One-Click Deployments:** Deploy automatically if tests pass.
+- **Rollback Support:** Ability to revert changes quickly.
+
+### Unit Testing
+
+- **Focuses on individual components** (functions, classes, or modules).
+- **Must be fast** to execute.
+- Use **mocks** and **stubs** to isolate components.
+
+#### Example Test Structure (NUnit - C#)
+```csharp
+[Test]
+public void GetMinimum_UnsortedArray_ReturnsSmallestValue() {
+    var arr = new int[] {7, 4, 9, 2, 5};
+    var minimum = Statistics.GetMinimum(arr);
+    Assert.AreEqual(2, minimum);
+}
+```
+- **Structure:**
+  1. **Arrange** - Set up test data.
+  2. **Act** - Execute the function.
+  3. **Assert** - Verify the output.
+
+### Flaky Tests
+
+- **Flaky tests fail inconsistently**.
+- **Common causes:**
+  1. Improper waiting for async responses.
+  2. Concurrency issues (race conditions, deadlocks).
+  3. Test order dependencies (tests rely on prior tests).
+- **Fixes:** Use explicit waits instead of `sleep()`, proper locking mechanisms, and independent test cases.
+
+### Test Doubles
+
+- Used to **isolate dependencies** in unit tests.
+- Types:
+  - **Dummy objects**: Only fill parameter lists, do nothing.
+  - **Fakes**: Implement real behavior but unsuitable for production.
+  - **Stubs**: Return predefined responses.
+  - **Mocks**: Verify method calls and behavior.
+  - **Spies**: Record interactions but wrap real objects.
+
+### Mocking Example (jMock - Java)
+```java
+Mock warehouse = mock(Warehouse.class);
+Mock mailer = mock(MailService.class);
+order.setMailer((MailService) mailer.proxy());
+mailer.expects(once()).method("send");
+```
+
+### Key Takeaways
+
+- **Testing is essential** for maintainable software.
+- **Automate everything**: Regression tests should always be automated.
+- **Unit tests** should be small and isolated.
+- **Flaky tests must be fixed** to maintain reliability.
+- **Mock dependencies** for more effective unit testing.
+
+---
+
+## Lecture 3 - Coverage and Fuzzing
+
+**Date:** *January 13, 2025*  
+**Author:** *Patrick Lam*
+
+### Control-Flow Graph (CFG)
+
+A CFG is a graphical representation of the flow of control in a program.
+
+- **Nodes:** Represent zero or more statements.
+- **Edges:** Represent possible transitions between statements.
+
+**CFG Construction:**
+1. **Lexing:** Converts characters into tokens.
+2. **Parsing:** Converts tokens into a concrete syntax tree.
+3. **Abstract Syntax Tree (AST):** Cleans up the concrete syntax tree.
+4. **CFG Generation:** Converts the AST into a control-flow graph.
+5. **Optimizations:** Apply optimizations to the CFG.
+6. **Code Generation:** Convert the CFG into bytecode or machine code.
+
+### Basic Blocks
+
+A sequence of instructions with one entry point and one exit point.
+
+- **Maximal Basic Blocks:** Group statements that always execute together.
+
+**Example:** In a loop, the body of the loop forms a basic block.
+
+### Statement & Branch Coverage
+
+- **Statement Coverage:** Fraction of statements (nodes) executed by the test suite.
+- **Branch Coverage:** Fraction of branches (edges) taken by the test suite.
+
+**Example:**
+Consider the following Python code and test suite:
+
+```python
+class Foo:
+    def m(self, a, b):
+        if a < 0 and b < 0:
+            return 4
+        elif a < 0 and b > 0:
+            return 3
+        elif a > 0 and b < 0:
+            return 2
+        elif a >= 0 and b >= 0:
+            return a / b
+        raise Exception("I didn't think things through")
+```
+
+And the test suite:
+```python
+import unittest
+from foo import Foo
+
+class CoverageTests(unittest.TestCase):
+    def test_one(self):
+        f = Foo()
+        f.m(1, 2)
+
+    def test_two(self):
+        f = Foo()
+        f.m(1, -2)
+
+    def test_three(self):
+        f = Foo()
+        f.m(-1, 2)
+```
+- **Coverage Report:** The test suite achieves 100% statement coverage but only 75% branch coverage because it doesn't cover the case where both `a` and `b` are negative.
+
+### Fuzzing
+
+Fuzzing is a technique for finding software bugs by feeding random or semi-random inputs to a program.
+
+#### Types of Fuzzing:
+
+1. **Mutation-Based Fuzzing:** Randomly modifies existing inputs.
+2. **Generation-Based Fuzzing:**  Generates inputs based on a grammar or model.
+
+#### Fuzzing Workflow
+
+1. Generate random inputs.
+2. Feed inputs to the program.
+3. Observe crashes, assertion failures, or runtime errors.
+
+#### Levels of Fuzzing (for C Programs)
+
+1. Sequence of ASCII characters;
+2. Sequence of words, separators, and white space (gets past the lexer);
+3. Syntactically correct C program (gets past the parser);
+4. Type-correct C program (gets past the type checker);
+5. Ttatically conforming C program (starts to exercise optimizations);
+6. Dynamically conforming C program;
+7. Model conforming C program.
+
+Fuzzing runs automatically and really works, but without significant work, it won’t find sophisticated domain-specific issues.
+
+
+### Key Takeaways
+
+- **Code Coverage:** Use statement and branch coverage to ensure that your tests are comprehensive and target critical paths in your code.
+
+- **Fuzzing:** Fuzzing is an effective technique for uncovering bugs, by feeding the program random or semi-random input.
+
+- **Control Flow Graphs:** Represent the flow of control in a program, and are used to calculate coverage metrics.
+
+---
+
+### [Add More Lecture Summaries Below]
+
