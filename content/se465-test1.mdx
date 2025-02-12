@@ -814,16 +814,16 @@ A runtime libary supported by Clang and GCC that provides compile-time instrumen
     <tbody>
       <tr>
         <td>
-          <pre><code class="language-cpp">
-  *addr = e;
-          </code></pre>
+          ```c++
+          *addr = e;
+          ```
         </td>
         <td>
-          <pre><code class="language-cpp">
-  if (IsPoisoned(addr))
-    ReportError(addr, sz, true);
-  *addr = e;
-          </code></pre>
+        ```c++
+        if (IsPoisoned(addr))
+            ReportError(addr, sz, true);
+        *addr = e;
+        ```
         </td>
       </tr>
     </tbody>
