@@ -11,6 +11,7 @@ tags: "SE465"
 - [Lecture 3 - Coverage and Fuzzing](#lecture-3-coverage-and-fuzzing)
 - [Lecture 4 - Mutation Analysis](#lecture-4-mutation-analysis)
 - [Lecture 5 - Syntax and Semantics](#lecture-5-syntax-and-semantics)
+- [Lecture 6 - Automated Test Case Generation](#lecture-6-automated-test-case-generation)
 
 ---
 
@@ -765,5 +766,154 @@ assert(y < 200);
 - **Big-Step Semantics**: Describes how a program executes in a single step.
 - **Small-Step Semantics**: Defines transitions between intermediate execution states.
 - **Assertions & Assumptions**: Help model program correctness and symbolic execution.
+
+---
+
+# Lecture 6 - Automated Test Case Generation
+
+**Date:** *No Clue*
+
+To generate interesting inputs: 
+- Black box - truly random
+- Grey Box - guided by code coverage
+- White box - guided by code structure
+
+Properties for generic automatic oracles:
+- Don't crash
+- Dont mis-use memory
+- User written assertions 
+- Domain specific oracles
+
+## Valgrind 
+
+Inpsects CPU instructions and inserts low-level checks. Execution of every instruciton
+is interpreted in a sandbox and reported if bad behaviour detected.
+- **Pros:** Detailed analysis. 
+- **Cons:** 10x slower in performance. 
+
+## Address Sanitizer
+
+A runtime libary supported by Clang and GCC that provides compile-time instrumentation. Often used in production code.
+- Major part of automated test-case generation validation.  
+
+**Key Idea:** Instrument all memory accesses. 
+- Compiler insturments store/load instructions with a check if memory is accesible.
+  - Must be super efficient! 
+  - Meta information about memory is stored. 
+
+**Example:**
+
+
+  <table>
+    <thead>
+      <tr>
+        <th>Original</th>
+        <th>Instrumented</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>
+          <pre><code class="language-cpp">
+  *addr = e;
+          </code></pre>
+        </td>
+        <td>
+          <pre><code class="language-cpp">
+  if (IsPoisoned(addr))
+    ReportError(addr, sz, true);
+  *addr = e;
+          </code></pre>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+
+## Memory Mapping 
+
+Virtual memory has 2 classes:
+- **Mem** is normal application memory. 
+- **Shadow** is used to store metadata about main memory.
+
+Poisoning a byte `addr` of **Mem** means writing a special value to
+corresponding place in **Shadow**
+
+Mem and Shadow should be organized such that mapping is super fast. 
+
+```c++
+// instrument access to addr:
+shadow_addr = MemToShadow(addr);
+if (ShadowIsPoisoned(shadow_addr)) {
+ReportError(addr, sz, kIsWrite);
+}
+```
+
+## Memory Alignment
+
+Process memory is divided into 8 byte words, called **QWORDs**.
+- Heap and Stack allocs are at a QWORD boundary.
+- This is called **alignment** (# of bytes differs on architecture).
+
+Depending on the architecture unaligned memory
+accesses are expensive.
+- Compilers optimize the code so most accesses
+are aligned
+
+## Stae of an allocated QWORD
+
+AddressSanitizer maps each QWORD of Mem into **one** byte of Shadow.
+
+Each QWORD can be in one of 9 states:
+- All 8 bytes are accessible (not poisoned). Shadow value is **0**.
+- All 8 bytes are inaccessible (poisoned). Shadow value is negative **(< 0)**.
+- First k bytes are accessible, the rest 8-k bytes are not, 0 < k < 8. Shadow is **k**.
+
+## Instumentation Example
+  
+```c++
+byte *shadow_addr = addr >> 3 + 0x20000000;
+byte shadow_value = *shadow_addr;
+
+if (shadow_value < 0) ReportError(addr, sz, kIsWrite);
+else if (shadow_value) {
+  if (SlowPathCheck(shadow_value, addr, sz)) {
+    ReportError(addr, sz, kIsWrite);
+  }
+}
+
+bool SlowPathCheck(shadow_value, addr, sz) {
+  last_accessed_byte = ((addr & 7) + (sz – 1)) & 7;
+  // returns if the acessed byte is poisoned
+  return (last_accessed_byte >= shadow_value);
+}
+```
+
+## Marking Allocation Boundaries with Redzones
+Change heap allocator to mark boundaries of allocated segments
+- The markers are called **redzones**
+- All calls to `malloc()` are replaced with calls to `__asan_malloc()`
+
+```c++
+void *__asan_malloc(size_t sz) {
+    // Allocate & poison left redzone
+    void *rz = malloc(RED_SZ);
+    Poison(rz, RED_SZ);
+    
+    //Allocate usable memory
+    void *addr = malloc(sz);
+    UnPoison(addr, sz);
+    
+    // Allocate & poison right redzone
+    rz = malloc(RED_SZ);
+    Poison(rz, RED_SZ);
+    // Return usable memory
+    return addr;
+}
+```
+
+## Key Takeaways
+- **Address Sanitizer** instruments memory accesses to detect errors.
+- **Memory Mapping** and **Memory Alignment** are key concepts in Address Sanitizer.
+- **Redzones** are used to mark allocation boundaries.
 
 ---
