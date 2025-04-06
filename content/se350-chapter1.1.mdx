@@ -1,0 +1,137 @@
+---
+title: "SE350 Chapter 1 Part 1"
+publishedAt: "2025-03-06"
+summary: "A review of Chapter 1 for SE350."
+tags: "SE350"
+---
+
+# Quick Links
+
+- [Basic Computer Organization](#basic-computer-organization)
+- [Program Execution](#program-execution)
+- [Interrupts](#interrupts)
+- [Multiprogramming](#multiprogramming)
+- [I/O Communication Techniques](#io-communication-techniques)
+
+---
+
+# Chapter 1.1 Summary — Processor, Interrupts, and I/O
+
+## Computer System Overview
+- OS manages resources using hardware mechanisms  
+- Understanding basic hardware is essential (especially for labs)
+
+## Basic Computer Organization
+
+### Components
+- CPU, Memory, I/O Devices, Interconnect (bus)
+
+### Control and Status Registers
+- **Invisible to users** but essential for processor control
+- Examples:
+  - `PC` (Program Counter): address of next instruction
+  - `IR` (Instruction Register): currently fetched instruction
+  - `SP` (Stack Pointer): top of the stack
+  - `MAR`/`MBR`: address and data transfer
+  - `PSW` (Program Status Word): flags like zero, overflow, supervisor mode
+
+<Image src="/photos/se350/chapter1/control-status-registers.png" width={600} height={300} alt="Control and Status Registers" />
+
+### User-Visible Registers
+- Accessible to all programs
+- Controlled by compilers or explicitly via C keywords (e.g. `register`, `volatile`)
+
+## Program Execution
+
+### Instruction Cycle (Simplified)
+1. Fetch from memory  
+2. Execute instruction
+
+### Reality (Modern CPUs)
+- Pipelines, VLIW, Superscalar
+
+<Image src="/photos/se350/chapter1/pc-ir-cycle.png" width={500} height={280} alt="Program Counter and IR" />
+
+### Categories of Instructions
+- Processor-memory, processor-I/O, data processing, control (e.g. branching)
+
+## Interrupts
+
+- **Used to handle slower I/O devices efficiently**  
+- **Interrupt = signal to pause and run a different routine**
+
+### Classes
+- Timer, I/O, software exceptions, faults
+
+### Interrupt Cycle
+1. Check for interrupt  
+2. Save current context (snapshot)  
+3. Jump to interrupt handler  
+4. Return and restore context
+
+<Image src="/photos/se350/chapter1/interrupt-cycle.png" width={600} height={300} alt="Interrupt Cycle" />
+
+## ARM Cortex-M Specifics
+
+### Execution Modes
+- Thread Mode (user tasks)  
+- Handler Mode (interrupts and faults)
+
+### Stack Usage
+- `PSP` for threads, `MSP` for kernel/handlers
+
+### Special Registers
+- `PSR`, `Control`, access via MRS/MSR (privileged only)
+
+### Exception Handling
+- Prioritized (Reset > NMI > HardFault > others)  
+- Vector table holds handler addresses
+
+<Image src="/photos/se350/chapter1/exception-entry.png" width={650} height={320} alt="Exception Entry and Return" />
+<Image src="/photos/se350/chapter1/exception-return.png" width={650} height={320} alt="Exception Entry and Return" />
+
+### Supervisor Call (SVC)
+- System calls using `SVC #imm`  
+- Parameters in R0–R3 or stack  
+- Danger: unchecked access = privilege escalation
+
+## OS and Interrupts (UNIX/Linux)
+
+1. Device driver registered  
+2. Library call (e.g. `write`)  
+3. Interrupt triggers ISR in driver
+
+## Multiple Interrupts
+
+### Approaches:
+- Disable interrupts during handling (bad for timing)  
+- Use priority levels (better)
+
+<Image src="/photos/se350/chapter1/nested-interrupts.png" width={600} height={300} alt="Nested Interrupt Example" />
+
+## Multiprogramming
+
+- Run other programs while waiting on I/O  
+- Scheduler decides which process to run next
+
+## I/O Communication Techniques
+
+### 1. Programmed I/O
+- Busy waiting; CPU polls status
+
+### 2. Interrupt-Driven I/O
+- CPU only works when device is ready  
+- Still goes through CPU (overhead)
+- Still consumes a lot of processor
+time, because every word read/write passes through the
+processor (two instructions)
+
+### 3. DMA (Direct Memory Access)
+- Block transfer bypassing CPU  
+- Sends interrupt only on completion
+
+<Image src="/photos/se350/chapter1/dma.png" width={600} height={300} alt="Direct Memory Access" />
+
+---
+
+Next up: Chapter 1 Part 2!
