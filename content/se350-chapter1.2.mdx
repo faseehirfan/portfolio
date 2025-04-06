@@ -1,0 +1,104 @@
+---
+title: "SE350 Chapter 1 Part 2"
+publishedAt: "2025-03-06"
+summary: "A review of Chapter 1.2 for SE350."
+tags: "SE350"
+---
+
+# Quick Links
+- [Memory](#memory-design)
+- [Cache](#cache-memory)
+- [Multiprocessors](#multiprocessors)
+
+---
+
+# Chapter 1.2 Summary — Memory Organization, Caching, and Multiprocessors
+
+## Memory Design
+- Key trade-offs:
+  1. **Capacity**
+  2. **Access time**
+  3. **Cost per bit**
+- Solution: **Memory hierarchy** — combine fast small memory with slower large memory
+
+## Memory Hierarchy
+- Upper levels: faster, more expensive, smaller
+- Lower levels: slower, cheaper, larger
+
+<Image src="/photos/se350/chapter1/ch1_2_slide_3.png" width={600} height={300} alt="Memory Hierarchy" />
+
+## Access Frequency & Hit Ratio
+- High probability of accessing fast memory = effective hierarchy
+- Definitions:
+  - `T1`: access time to fast memory
+  - `T2`: access time to slow memory
+  - `H`: hit ratio (% of accesses in fast memory)
+
+**Average access time:**
+
+$$
+T_s = T_1 + (1 - H) \cdot T_2
+$$
+
+<Image src="/photos/se350/chapter1/ch1_2_slide_5.png" width={500} height={180} alt="Average Access Time Formula" />
+
+## Locality of Reference
+Memory references by the processor
+tend to cluster.
+- **Temporal Locality**: reuse of same memory location soon
+- **Spatial Locality**: accessing nearby addresses
+
+### Examples:
+- Temporal: loop counters, local variables
+- Spatial: array elements, sequential instruction blocks
+
+<Image src="/photos/se350/chapter1/ch1_2_slide_7.png" width={550} height={250} alt="Programming Constructs and Locality" />
+
+## Cache Memory
+- Bridge between CPU and main memory
+- Mitigates growing gap between CPU speed and memory access time
+
+### Cache Design Considerations
+- **Cache Size**: Cost vs Hit ratio; small size can have high impact on
+performance.
+- **Block Size**: Larger blocks exploit spatial locality but increase miss penalty.
+- **Mapping and Replacement**: How do we keep track of which blocks are loaded in
+cache? How do we decide which block is replaced if
+cache if full?
+- **Write Policy**: When do we write modified location to main memory?
+12
+- Multiple levels common (e.g., L1, L2, L3)
+
+### Cache Read Cycle:
+<Image src="/photos/se350/chapter1/ch1_2_slide_11.png" width={600} height={280} alt="Cache Read Operation" />
+
+## Software-Managed Caches
+- OS-level caching (e.g., disk cache) handles slow peripherals
+- Exploits locality in software-controlled fashion
+
+## Multiprocessors
+- Systems with **2+ processors** working together
+- Advantages:
+  1. **Performance** (More processes do more work)
+  2. **Availability** (fault tolerance)
+  3. **Scalability** (add more cores)
+
+## Symmetric Multiprocessors (SMP)
+- Shared memory & I/O
+- Uniform memory access times
+- Processors perform the same functions.
+- Single OS controls the system
+
+## Multicore Processors
+- Special case of SMP: all cores on one chip
+- Private L1 cache, shared L2/L3
+- Cache architecture has significant impact on processor
+scheduling.
+    - Migrating tasks across different caches is expensive.
+
+## Example x86 CPU Layout
+<Image src="/photos/se350/chapter1/ch1_2_slide_17.png" width={700} height={350} alt="x86 CPU Diagram" />
+
+---
+
+That wraps up Chapter 1.2
