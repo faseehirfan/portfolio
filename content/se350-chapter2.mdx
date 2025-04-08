@@ -1,0 +1,132 @@
+---
+title: "SE350 Chapter 2"
+publishedAt: "2025-04-08"
+summary: "A review of Chapter 2 for SE350."
+tags: "SE350"
+---
+
+# Chapter 2 OS: Evolution
+
+Below is a concise study guide that covers the evolution from simple batch systems, to multiprogrammed batch systems, to modern time-sharing systems. It includes scheduling approaches and the key hardware features that enabled each style of system.
+
+---
+
+## 1. Simple Batch Systems
+
+**Key Ideas**  
+- Earliest “organized” operating systems (1950s–early 1960s).  
+- Jobs (programs) are collected in batches, each executed **one at a time**.  
+- A small “monitor” program (resident monitor or kernel) loads the next job when the current one finishes.
+
+**Goals**  
+- Improve utilization compared to purely “serial” processing.  
+- Automate job sequencing to reduce setup time.
+
+**Hardware Requirements / Features**  
+1. **Memory Protection** – prevent user programs from overwriting the monitor’s memory area.  
+2. **Timer** – detect/prevent jobs from running forever.  
+3. **Privileged Instructions** – only the OS (in kernel mode) can run these critical instructions.  
+4. **Dual-Mode Operation (User vs. Kernel)** – CPU supports user mode for jobs, kernel mode for the OS.
+
+**Scheduling**  
+- Typically **FIFO (FCFS)** for each batch.  
+- Minimal or no context switching (no preemption).
+
+---
+
+## 2. Multiprogrammed Batch Systems
+
+**Key Ideas**  
+- Evolved to reduce CPU idle time: keep multiple jobs in memory so when one job is blocked on I/O, another can run.
+
+**Goals**  
+- Overlap I/O and computation to maximize CPU utilization (improve **throughput**).
+
+**Hardware Requirements / Features**  
+1. **More Advanced Memory Management** – must manage multiple programs’ memory at once.  
+2. **Interrupt-Driven I/O** – so the CPU can switch to other jobs while one job is waiting for I/O.
+
+**Scheduling**  
+- Switch jobs whenever the current job blocks on I/O.  
+- Could use **Shortest Job Next**, **Priority Scheduling**, or similar.
+
+---
+
+## 3. Modern Time-Sharing Systems
+
+**Key Ideas**  
+- Designed for interactive multi-user use (e.g., multiple terminals).  
+- Each user experiences quick response times, as if each has a dedicated machine.
+
+**Goals**  
+- **Fast response** for many concurrent users.  
+- **Fairness**: ensure no single process/user monopolizes the CPU.
+
+**Hardware / OS Features**  
+1. **Time Slicing** – a clock interrupt triggers context switches at short intervals.  
+2. **Advanced Memory Management** – typically uses virtual memory.  
+3. **Protection & Security** – needed for multi-user isolation.  
+4. **Preemptive Scheduling** – forcibly context-switch processes to ensure responsiveness.
+
+**Scheduling**  
+- Often **Round-Robin** (each process gets a small time quantum).  
+- May combine with priority-based preemption or other algorithms.
+
+---
+
+## Contrasting the Three System Types
+
+<Table
+  data={{
+    headers: ["Feature", "Simple Batch", "Multiprogrammed Batch", "Time-Sharing"],
+    rows: [
+      [
+        "Main Purpose",
+        "Streamline job sequencing; better resource use than purely serial",
+        "Maximize CPU utilization by overlapping I/O & CPU (increasing throughput)",
+        "Support multiple interactive users with rapid context switching for quick responses",
+      ],
+      [
+        "Memory Organization",
+        "Typically holds only one job at a time",
+        "Holds multiple jobs concurrently; requires memory protection & relocation",
+        "Multiple user programs in memory; advanced VM with strong protection",
+      ],
+      [
+        "Scheduling",
+        "Essentially non-preemptive FIFO (within each batch)",
+        "Switches to a new job when the running job blocks for I/O",
+        "Preemptive (time-sliced); often Round Robin or priority-based for responsiveness",
+      ],
+      [
+        "Key Hardware Features",
+        "Basic memory protection, timer, privileged instructions, dual-mode operation",
+        "All Simple Batch features plus interrupt-driven I/O and advanced memory management",
+        "All multiprogramming features plus frequent timer interrupts, stronger protection, multi-user concurrency",
+      ],
+      [
+        "Interaction",
+        "None (each batch runs to completion before next)",
+        "Minimal user interaction in real-time; mostly batch jobs",
+        "Highly interactive (simultaneous users/processes, quick context switching, strong isolation/security)",
+      ],
+    ],
+  }}
+/>
+
+---
+
+## Scheduling Examples
+
+- **FIFO / FCFS:** First-come, first-served, no preemption. Common in simple batch.  
+- **Round Robin:** Divides CPU time into small quanta and cycles through processes. Common in time-sharing.  
+- **Priority Scheduling:** Highest-priority process runs first (careful of starvation).  
+- **Shortest Job First / Shortest Remaining Time:** Minimizes average wait time in batch systems (needs job-length estimates).
+
+---
+
+## Key Takeaways
+
+1. **Simple Batch** – Single job runs at a time until completion. Minimal concurrency.  
+2. **Multiprogramming (Batch)** – Multiple jobs in memory; CPU is kept busy by switching to another job when one blocks.  
+3. **Time-Sharing** – Extends multiprogramming with time-slicing and multi-user support; strong protection and preemptive scheduling ensure responsiveness.
