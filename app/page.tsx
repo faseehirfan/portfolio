@@ -5,7 +5,7 @@ export default function Page() {
   return (
     <section>
       <Image
-        src="/profile2.png"
+        src="/profile3.png"
         alt="Profile photo"
         className="rounded-full bg-gray-100 block lg:mt-5 mt-0 lg:mb-5 mb-10 mx-auto sm:float-right sm:ml-5 sm:mb-5 grayscale hover:grayscale-0"
         width={160}
@@ -19,18 +19,24 @@ export default function Page() {
 
       <div className="prose prose-neutral dark:prose-invert">
         <p>
-          I'm a third year Software Engineering student at the University of
+          I'm a fourth year Software Engineering student at the University of
           Waterloo who likes making cool stuff.
         </p>
         <p>
-          I'm currently working as a Full-Stack Software Developer at{" "}
+          I'm currently on the lookout for Winter and Summer 2026 internships.
+          I've previously interned at{" "}
+          <a target="_blank" href="https://www.wealthsimple.com/en-ca">
+            Wealthsimple
+          </a>
+          {", "}
           <a target="_blank" href="https://portagelabs.io">
             Portage Labs
           </a>
-          . I've previously interned at the{" "}
+          {", "}
           <a target="_blank" href="https://www.bmo.com/en-ca/main/personal/">
             Bank of Montreal
-          </a>{" "}
+          </a>
+          {", "}
           and{" "}
           <a target="_blank" href="https://www.constanthealth.ca/">
             Constant Health

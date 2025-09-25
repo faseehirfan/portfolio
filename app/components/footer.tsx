@@ -4,7 +4,6 @@ import {
   AccessibilityIcon,
   EnvelopeClosedIcon,
   GitHubLogoIcon,
-  InstagramLogoIcon,
   LinkedInLogoIcon,
 } from "@radix-ui/react-icons";
 import { metaData, socialLinks } from "app/config";
@@ -30,7 +29,7 @@ function SocialLinks() {
   return (
     <div className="flex text-lg gap-3.5 float-right transition-opacity duration-300 hover:opacity-90">
       <SocialLink href={socialLinks.github} icon={GitHubLogoIcon} />
-      <SocialLink href={socialLinks.instagram} icon={InstagramLogoIcon} />
+      {/* <SocialLink href={socialLinks.instagram} icon={InstagramLogoIcon} /> */}
       <SocialLink href={socialLinks.linkedin} icon={LinkedInLogoIcon} />
       <SocialLink href={socialLinks.email} icon={EnvelopeClosedIcon} />
       <a href="/rss.xml" target="_self">
