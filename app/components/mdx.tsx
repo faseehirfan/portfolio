@@ -125,6 +125,9 @@ export function CustomMDX(props) {
       {...props}
       components={{ ...components, ...(props.components || {}) }}
       options={{
+        // Repository-authored MDX uses expressions for table data and image sizes.
+        // Only render trusted content here; keep blockDangerousJS enabled by default.
+        blockJS: false,
         mdxOptions: {
           remarkPlugins: [remarkMath],
           rehypePlugins: [rehypeKatex],
