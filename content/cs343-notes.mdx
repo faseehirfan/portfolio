@@ -1,0 +1,552 @@
+---
+title: "CS343 Course Notes"
+publishedAt: "2026-11-07"
+summary: "Notes on control flow, exceptions, coroutines, concurrency, mutual exclusion, and locks in CS343."
+tags: "CS343"
+---
+
+My notes on CS343, covering control flow and storage, exceptions, coroutines, concurrent execution, mutual exclusion, and locks. Examples use C++ and the course's µC++ extensions. These notes cover material through Section 6.3.2.3, along with bounded buffers.
+
+# Quick Links
+
+- [1. Control flow and storage](#1-control-flow-and-storage)
+- [2. Nonlocal transfer and exceptions](#2-nonlocal-transfer-and-exceptions)
+- [3. Coroutines from first principles](#3-coroutines-from-first-principles)
+- [4. Concurrency foundations: Sections 5.1–5.6](#4-concurrency-foundations-sections-5156)
+- [5. Concurrent execution: Sections 5.7–5.13](#5-concurrent-execution-sections-57513)
+- [6. Mutual exclusion: Sections 5.14–5.19](#6-mutual-exclusion-sections-514519)
+- [7. Locks through Section 6.3.2.3](#7-locks-through-section-6323)
+
+---
+
+## 1. Control flow and storage
+
+### 1.1 Static multi-level exit
+
+Static means the destination is determined lexically, at compile time. Labelled breaks identify the enclosing construct being exited. Outdenting exit tests makes the exits easy to see. A label also helps preserve the intended exit when another loop is inserted during maintenance.
+
+Prefer restructuring to duplicated code and unnecessary control flags. For example:
+
+```cpp
+// S1; while ( C ) { S2; S1; }
+for ( ;; ) {
+    S1;
+    if ( ! C ) break;
+    S2;
+}
+```
+
+Check that S1 still executes before the first test and after each S2. Never move a test past an operation on which it depends. For separate exit actions, perform the action at the appropriate exit rather than testing the condition again later: it may have changed or have side effects.
+
+You must also lower loops and conditionals to `if`, labels, and `goto`. Example:
+
+```cpp
+Top: if ( ! C ) goto Done;
+     S;
+     goto Top;
+Done: ;
+```
+
+A flag contains control information rather than the problem's data. It can be necessary to retain a decision across separate inner lexical scopes. Eliminating every boolean is not the objective: a buffer's poisoned state is real protocol state. Arbitrary parsing phase flags that duplicate the coroutine's current execution location are the usual problem.
+
+### 1.2 Dynamic allocation
+
+Stack allocation has automatic cleanup, low allocation cost, and avoids shared heap-allocation contention. Heap allocation is useful when lifetime must extend beyond the allocating scope, sizes change during execution, objects need independent lifetimes, or stack capacity is insufficient. Runtime-known size alone does not force heap use in this course: the course uses stack VLAs.
+
+Understand the object layout and allocation count, not only syntax:
+
+<Table data={{
+  "headers": [
+    "Mechanism",
+    "Main distinction"
+  ],
+  "rows": [
+    [
+      "Stack array / VLA",
+      "Elements in stack storage; VLA extent selected at creation"
+    ],
+    [
+      "unique_ptr<T[]>",
+      "Owns one dynamically allocated array of elements"
+    ],
+    [
+      "unique_ptr<T> a[N]",
+      "Array of owning pointers; separately allocating each element entails N element allocations"
+    ],
+    [
+      "Sized vector",
+      "Contiguous element storage, normally one initial storage allocation"
+    ],
+    [
+      "Growing vector",
+      "May allocate repeatedly and move/copy elements as capacity grows"
+    ],
+    [
+      "Course uArray / uArrayPtr facilities",
+      "Support course-specific array allocation/construction patterns; inspect the exact form in the course notes"
+    ]
+  ]
+}} />
+
+When comparing allocation strategies, consider stack versus heap contention, one allocation versus many, capacity growth, and aggregate CPU time versus elapsed time. Measured timings depend on the workload and environment.
+
+## 2. Nonlocal transfer and exceptions
+
+### Why an ordinary return is sometimes inadequate
+
+A routine can have a normal result and several alternate outcomes. Return codes, globals, tagged unions/variants, status fields, fixup callbacks, and exceptions represent these outcomes differently. With return codes/unions, intermediate callers may have to test and forward an error they cannot handle. Exceptions separate the raise site from the dynamically selected handler.
+
+A fixup callback handles a problem and returns so the original computation can continue. Resumption exceptions generalize this: find a suitable handler dynamically, let it repair the situation, then return to the raise point.
+
+### Label variables and longjmp
+
+A nonlocal jump must identify both the target activation/frame and the location within that activation. Recursion means a function name alone does not identify the correct frame. Jumping back into a returned activation is invalid; the notes discuss this as stack smashing. More generally, stack smashing also refers to corrupting stack storage.
+
+`setjmp` saves an execution environment; `longjmp` transfers to it. Unlike C++ exception unwinding, it does not provide destructor-based cleanup of bypassed objects. Do not describe it as ordinary exception unwinding. Treat this as course-level control-flow reasoning, not a recommendation to use longjmp with C++ objects.
+
+### The four control-flow combinations
+
+<Table data={{
+  "headers": [
+    "How target is selected",
+    "Static return destination",
+    "Dynamic return destination"
+  ],
+  "rows": [
+    [
+      "Static call/raise",
+      "Sequel",
+      "Ordinary named routine"
+    ],
+    [
+      "Dynamic call/raise",
+      "Termination exception handler",
+      "Routine pointer, virtual call, resumption handler"
+    ]
+  ]
+}} />
+
+Static/dynamic here describes target/return selection, not allocation or thread scheduling. A sequel returns to the end of its declaration block; an ordinary routine returns to its caller.
+
+### Termination versus resumption
+
+<Table data={{
+  "headers": [
+    "",
+    "Termination",
+    "Resumption"
+  ],
+  "rows": [
+    [
+      "Raise",
+      "throw / _Throw",
+      "_Resume"
+    ],
+    [
+      "Handler",
+      "catch",
+      "_CatchResume"
+    ],
+    [
+      "Core effect",
+      "Unwind to handler, abandoning intervening computation",
+      "Handle without unwinding the raising computation"
+    ],
+    [
+      "After normal handler completion",
+      "After the try/handler construct",
+      "After the raise/delivery point"
+    ],
+    [
+      "Typical purpose",
+      "Recovery at an outer level",
+      "Fixup and continue"
+    ]
+  ]
+}} />
+
+`_CatchResume` clauses precede `catch` clauses. An unmatched `_Resume` calls `defaultResume`, whose default action is to throw that exception; a matching termination handler can then handle it. Trace this extra step explicitly.
+
+For exception searches, draw the live stack. Mark guarded blocks, unguarded blocks, matching types, and the active handler. Inspect innermost eligible handlers first and clauses in order. A throw inside a handler does not simply search its sibling clauses. A bare rethrow propagates the current exception outward. Separate three possible destinations: resumption after raise, retry at the protected region's start when the specified mechanism supports it, and termination after the handler construct. Do not invent a retry operation where the language does not provide one.
+
+### Inheritance, parameters, binding, and cleanup
+
+<Table data={{
+  "headers": [
+    "Topic",
+    "Notes section",
+    "Printed page"
+  ],
+  "rows": [
+    [
+      "Derived exceptions, handler order, catching by reference/slicing",
+      "4.1 Derived Exception-Type",
+      "55"
+    ],
+    [
+      "Catch-any",
+      "4.2",
+      "55–56"
+    ],
+    [
+      "Exception parameters and fixup through references",
+      "4.3",
+      "56–57"
+    ],
+    [
+      "Exception lists and reuse",
+      "4.4",
+      "57–58"
+    ],
+    [
+      "Destructors and multiple exceptions",
+      "4.5–4.6",
+      "58–59"
+    ],
+    [
+      "_Throw versus throw, rethrow/reresume",
+      "3.5 Raising",
+      "35–36"
+    ],
+    [
+      "defaultResume and resumption-to-termination behavior",
+      "3.4 and 3.6.3",
+      "35, 37–38"
+    ],
+    [
+      "Object binding and bound handlers",
+      "3.6.4–3.6.5",
+      "38"
+    ]
+  ]
+}} />
+
+- Put derived handlers before base handlers. Catch by reference to preserve the dynamic exception type.
+- Standard C++ `throw baseReference` can slice to the static base type. The notes distinguish µC++ `_Throw`, which preserves the original derived exception. Catching by value can still truncate.
+- Exception fields carry information. Reference/pointer fields can let a resumption handler fix state at the raise site.
+- A bound handler matches both exception type and the raising object; matching only the type is insufficient.
+- Exception lists document/check which exceptions may propagate, but can tightly couple layers and restrict generic/polymorphic reuse. Study them as presented in the notes, including the historical syntax.
+- Stack unwinding destroys live automatic objects in exited scopes. RAII uses this for cleanup.
+- An exception must not escape a destructor while another exception is unwinding the stack. Distinguish the already-propagating exception from the competing escaping exception. A destructor that internally catches its own problem is a different situation.
+- Catch-any handlers can clean up or log and then rethrow/reresume. A finally action also covers normal departure; it is not just catch-any.
+
+## 3. Coroutines from first principles
+
+A coroutine retains data and execution position across activations. A µC++ coroutine has an object interface and a separate stack; it does not create its own thread. Calls into its interface initially execute in the calling coroutine's context. `resume()` transfers execution to the target coroutine; `suspend()` transfers back to its last resumer.
+
+### Trace these identities separately
+
+<Table data={{
+  "headers": [
+    "Name",
+    "Meaning"
+  ],
+  "rows": [
+    [
+      "this",
+      "Object whose member is executing"
+    ],
+    [
+      "uThisCoroutine()",
+      "Coroutine whose execution context is currently active"
+    ],
+    [
+      "Starter",
+      "Coroutine that first resumed this coroutine"
+    ],
+    [
+      "Last resumer",
+      "Coroutine most recently responsible for resuming it"
+    ]
+  ]
+}} />
+
+Calling another object's member changes `this` before `resume()` changes the active execution context. These are not automatically the same object. First resume establishes the starter, creates the coroutine stack, and starts its main. Normal coroutine-main termination returns to its starter; the unhandled-exception forwarding path goes to its last resumer. The course's self-resume/suspend edge cases need literal tracing rather than intuition.
+
+For a trace, use columns: **statement; active coroutine before; member receiver; starter; last resumer; active coroutine after**. Interface entry alone need not be a context switch. Context switching is not recursive stack accumulation. µC++ coroutine/task stacks do not automatically grow after creation.
+
+### Semi versus full coroutines
+
+Semi-coroutines resume a child and suspend back to their resumer. Full coroutines can form a resume cycle, such as A → B → A. Constructing the cycle requires references to objects that may not all exist yet; initialization followed by linking solves this. Draw starter and last-resumer links separately from the cycle edges. Termination need not follow the most recent cycle edge.
+
+In the course comparison, a stackful coroutine supports suspension inside helper routines and full coroutining; stackless generators have more restricted saved execution state. Python, JavaScript, and C++ coroutine examples illustrate these differences in saved execution state.
+
+### Coroutine Zen
+
+Let execution position represent parsing/control state. Replace `phase`, `stxSeen`, or a switch-driven state machine with loops and suspends at the point where the next input is needed. Retain meaningful data such as counts, a pivot, expected characters, indices, and partial results.
+
+```cpp
+// Two alternating input roles: no parity test needed.
+for ( int pair = 0; pair < 5; ++pair ) {
+    even += digit;
+    suspend();
+    odd += digit;
+    suspend();
+}
+```
+
+For a parser, first say what `ch` means at entry. Inspect the current character before asking for another; `suspend()` resumes later with a new character. Avoid both rereading the same character and skipping one. Optional prefixes, repetition counts, and terminators should each correspond to clear code regions. Reuse a digit-reading helper when allowed instead of duplicating it.
+
+The parser contract matters: a prefix-accepting grammar may report Match immediately, while an EOT-terminated phone grammar must check EOT after the last digit. Do not add an end-of-text requirement to a grammar that does not specify one.
+
+### Nonlocal exceptions
+
+`_Resume E() _At target` makes an exception pending at the target. It does not switch to the target or force an immediate interrupt. For a coroutine, activate the target separately. The target must have handlers installed and delivery enabled with `_Enable`. At a delivery point, it performs a local resumption raise; an eligible resumption handler can return to that delivery point, or default resumption can lead to a termination handler.
+
+An exception notification to the resumer must be paired with the required local completion/return. Otherwise the coroutine may keep executing after reporting a terminal Match/Error. Check the exact coroutine protocol before choosing a return, local throw, or partner activation.
+
+### Coroutine applications
+
+- **Lsdir:** reconstruct the grammar as sequential parsing with suspension, not a manual state machine. Test optional parts, early invalid input, incomplete input, and EOT.
+- **Binsertsort:** first input becomes pivot; later inputs go left/right. Sentinel changes the phase to in-order retrieval. Explain the 0-input and 1-input paths and why child coroutines should not be created unnecessarily.
+- **Player:** draw the full-coroutine ring, initialize partner links, and trace one ordinary turn plus one nonlocal-exception pass. Distinguish game data from redundant execution-state flags.
+- **Same fringe / driver / producer–consumer examples:** explain why retaining a stack simplifies a walk, suspended I/O protocol, or alternating exchange.
+
+## 4. Concurrency foundations: Sections 5.1–5.6
+
+A thread is an independently scheduled sequential execution path. Concurrency allows multiple executions to be in progress; parallelism is simultaneous execution on multiple processors. A coroutine provides saved execution state; a task has its own thread as well.
+
+Know the state transitions: new → ready → running; running → ready on preemption/yield; running → blocked when waiting; blocked → ready when unblocked; running → terminated on completion. **Unblocked does not mean running.** Scheduling still has to select the ready task. A yielding spin-waiter is ready/running, not condition-blocked.
+
+Review the hardware distinctions and threading-model diagrams: user-level threads, kernel threads, and how user execution maps onto kernel/hardware resources. A VM layer schedules operating systems onto hardware resources. Explain preemption and context switching rather than memorizing diagram labels alone.
+
+Implicit concurrency specifies units of work without explicitly managing each thread; explicit concurrency specifies the work and the threads. Actors have executor threads that run message handlers, not a dedicated thread per actor.
+
+## 5. Concurrent execution: Sections 5.7–5.13
+
+### 5.7 Speedup
+
+`S(C) = T1 / TC`. With parallelizable fraction P and C processors, the idealized bound is:
+
+```text
+TC / T1 = (1 - P) + P/C
+S(C) = 1 / ((1 - P) + P/C)
+S(infinity) = 1 / (1 - P), for P < 1
+```
+
+Example: T1 = 10 s, P = 0.8, C = 4 gives TC = 10 × (0.2 + 0.8/4) = 4 s; speedup 2.5, limiting speedup 5. For stage-specific improvements, add the new stage times and divide the old total by the new total. Do not average stage speedups.
+
+Real programs also pay for creation, scheduling, synchronization, communication, allocation, and bottlenecks. The longest dependency path bounds completion time. Total CPU/user time can rise while elapsed time falls because multiple CPUs do work simultaneously. When comparing implementations, use the same workload and a consistent baseline, and distinguish CPU time from elapsed time.
+
+### 5.8–5.10 Creation, lifetime, and scatter/gather
+
+<Table data={{
+  "headers": [
+    "Mechanism",
+    "Start work",
+    "Gather/join"
+  ],
+  "rows": [
+    [
+      "COBEGIN/COEND",
+      "Concurrent branches",
+      "COEND waits for branches"
+    ],
+    [
+      "COFOR",
+      "One unit for each index in [start, end)",
+      "End waits for units"
+    ],
+    [
+      "START/WAIT",
+      "Explicit start",
+      "Explicit wait"
+    ],
+    [
+      "Actor",
+      "Send a message to an actor",
+      "Wait for required completion; course whole-system examples use uActor::stop()"
+    ],
+    [
+      "Task object",
+      "Construct the object",
+      "Destruction/deletion waits for termination"
+    ]
+  ]
+}} />
+
+Create all workers before starting the join/deletion loop. Creating and immediately deleting a worker in the same loop serializes the computation. Data and referenced result slots must stay alive until workers finish.
+
+For a matrix, scatter independent rows to workers, write one result slot per row, gather after completion, then reduce sequentially. For mergesort, independently sort disjoint halves and join **before** merging. The actor version waits for both children before merging; the root's parent/sender is a special case. A depth cutoff stops excessive subdivision. Starting only one additional task and processing the other half in the current thread avoids an unnecessary waiting parent task.
+
+### 5.11 Concurrent exceptions and cancellation
+
+Capture `uBaseTask & pgmMain = uThisTask();` **in main before entering a worker context**. Evaluating `uThisTask()` inside a COFOR body gives that worker's task, not main.
+
+Workers can queue a failure at main; main can queue Stop at remaining workers. Delivery is cooperative through enabled polling points, not instantaneous remote termination. Put Stop handling around enabled worker work. Main's notification handler is often `_CatchResume` so creation/joining can continue.
+
+Keep delivery disabled during creation when the specification requires all workers to be created before handling failure. Install handlers and initialize tracking indices before enabling delivery. After notification, stop each eligible live worker once, continue joining, and never access deleted task objects. Cancellation index boundaries depend on the deletion and polling arrangement; establish object lifetime before choosing an index boundary.
+
+### 5.12–5.13 Synchronization and communication
+
+Synchronization establishes order/readiness; communication transfers data. Shared addresses work within a shared address space; distributed addresses do not automatically identify valid remote storage. A producer must not overwrite a value before the consumer has used it. A loop waiting for another execution's event is busy waiting, even if it yields.
+
+## 6. Mutual exclusion: Sections 5.14–5.19
+
+### Critical sections and interference
+
+A critical section is a group of instructions on associated shared data that must behave atomically. Mutual exclusion prevents simultaneous execution of conflicting sections. An atomic operation cannot have its partial results interfered with; this does not mean the executing thread can never be interrupted.
+
+`i += 1` contains load, add, store. A and B can both load 0, both compute 1, then both store 1. The final result is 1 rather than 2. This can occur with preemption on one CPU. `volatile` is not a mutual-exclusion mechanism.
+
+Static class variables are shared across instances. Constructor accesses may be sequential if one creating thread constructs every object; task mains are different. Per-worker result slots avoid shared read-modify-write reduction. Concurrent writes of the same boolean value do not make unsynchronized shared-memory access safe in standard C++. Separate result slots followed by a joined reduction give each worker clear ownership of its output.
+
+### The five rules, in this course's wording
+
+1. At most one thread in a critical section for a particular object: safety.
+2. Arbitrary thread speeds and ordering are allowed, with underlying progress/CPU service.
+3. A thread outside the entry/exit protocol must not prevent another from entering.
+4. Selection of a thread for entry cannot be postponed indefinitely: system liveness. The notes call failure indefinite postponement/livelock.
+5. Each thread that starts entry eventually enters: no starvation.
+
+Rule 4 asks whether someone progresses; rule 5 asks whether a particular contender eventually progresses. FCFS is stronger than simply starvation-free.
+
+### Software algorithms: failure and repair
+
+<Table data={{
+  "headers": [
+    "Algorithm",
+    "What to demonstrate"
+  ],
+  "rows": [
+    [
+      "Plain check-then-set lock",
+      "Both see OPEN before either sets CLOSED; safety/rule 1 fails"
+    ],
+    [
+      "Strict alternation",
+      "Thread whose turn it is stays outside; other cannot enter; rule 3 fails"
+    ],
+    [
+      "Declare intent",
+      "Both declare WantIn, then wait for the other; rule 4 fails"
+    ],
+    [
+      "Symmetric retract intent",
+      "Repeated simultaneous withdrawal/retry can prevent selection; rule 4 fails"
+    ],
+    [
+      "Fixed prioritized retract",
+      "High-priority thread repeatedly reenters; low-priority thread starves; rule 5 fails"
+    ],
+    [
+      "Dekker",
+      "Change priority so a contender eventually stops backing down; understand the notes' RW-safe modifications"
+    ],
+    [
+      "Peterson",
+      "Declare intent, then concede priority; the last writer waits while the other wants in"
+    ],
+    [
+      "N-thread prioritized retract",
+      "Fixed priority still allows starvation"
+    ],
+    [
+      "Bakery",
+      "Order by (ticket, id), including tie handling and selecting/not-interested states"
+    ],
+    [
+      "Tournament",
+      "Win locks along a tree path; release in the specified reverse path; understand node versus whole-tree overtaking"
+    ],
+    [
+      "Arbiter",
+      "Dedicated task grants permission; turns exclusion into client/arbiter synchronization at extra cost"
+    ]
+  ]
+}} />
+
+For every failed algorithm, write a two-column schedule showing exactly what each thread reads/writes. A label like "race" without a failure trace is usually incomplete.
+
+Peterson under the notes' atomic-read/write model:
+
+```text
+intent[me] = WantIn
+last = me
+while intent[you] == WantIn and last == me: wait
+critical section
+intent[me] = DontWantIn
+```
+
+The order of the first two assignments matters. Reversing them allows the other to enter before you declare intent, after which you can also enter because last names the other. Peterson is RW-unsafe in the notes; don't treat textbook pseudocode as a portable implementation for every hardware memory model. Dekker and Peterson also differ in overtaking because Dekker's loser retracts intent while Peterson's does not. Review the course's read-flicker discussion rather than assuming every software algorithm has identical atomicity assumptions.
+
+### Hardware primitives and ticket locks
+
+TestSet atomically reads the old lock and sets CLOSED; Swap atomically exchanges shared lock and local value; FetchInc atomically returns the old count and increments it. Atomic acquisition repairs check-then-set safety, but a basic competitive spin lock can still starve a contender.
+
+```text
+next = 0; serving = 0
+acquire:
+    mine = FetchInc(next)       // exactly once per acquisition
+    while serving != mine: wait
+release:
+    serving = serving + 1
+```
+
+Service in ticket order provides starvation avoidance under the course's progress assumptions. Don't fetch a fresh ticket on each spin. A complete implementation specifies initialization, atomic primitive semantics, and release.
+
+## 7. Locks through Section 6.3.2.3
+
+### 6.1–6.2 Spinning versus blocking
+
+A spinner checks repeatedly; yielding relinquishes its time slice but leaves it eligible to run. A blocking acquirer queues and stops competing for the CPU until awakened. Blocking requires cooperation: release must find a waiting acquirer and arrange progress. It can still use a short internal spin lock to protect its queue/state.
+
+`uSpinLock` is non-yielding; `uLock` yields. `tryacquire` attempts once rather than waiting. Basic competitive spin locks can starve. Reason about expected wait length, CPU availability, and scheduling cost before choosing spinning or blocking.
+
+### Lock comparison
+
+<Table data={{
+  "headers": [
+    "Primitive",
+    "Main purpose",
+    "Remembers unused notification?",
+    "Essential rule"
+  ],
+  "rows": [
+    [
+      "Owner mutex (uOwnerLock)",
+      "Mutual exclusion",
+      "Not an event notification mechanism",
+      "Owner can reacquire; release as many times as acquired"
+    ],
+    [
+      "Condition (uCondLock)",
+      "Wait for a predicate/event",
+      "No",
+      "Wait atomically releases owner lock and blocks; reacquires before return"
+    ]
+  ]
+}} />
+
+### 6.3.1 Mutex ownership, cleanup, and streams
+
+Owner locks track task identity and recursion count. After two acquisitions by an owner, one release is insufficient. A single-acquisition lock cannot simply be reacquired recursively. Explain the internal availability/owner/blocked-queue state and why testing and blocking must avoid a race with release.
+
+Use RAII or a finally cleanup pattern to pair ordinary acquisitions/releases across return and exceptions. Baton-transfer schemes require understanding who owns the release obligation; an unconditional scope release is not automatically correct there.
+
+Stream insertion is not an indivisible whole-line operation. `osacquire(cout)` protects a cascaded expression; a named stream-acquisition object can protect several statements by scope. The release pattern is RAII.
+
+### 6.3.2 Conditions, lost wakeups, and barging
+
+```cpp
+lock.acquire();
+while ( ! predicate ) condition.wait( lock );
+// owner lock is held; predicate has been rechecked
+use_or_update_state();
+lock.release();
+```
+
+Both predicate inspection/modification and the wait decision require appropriate mutual exclusion. `wait(lock)` atomically queues/blocks and releases lock, then reacquires it before returning. Releasing manually and only then waiting creates a lost-wakeup window. `signal()` with no waiter is lost, so use persistent state to remember the event. Signal does not give the waiter immediate execution or permanent ownership of a resource.
+
+For a one-way `done` predicate that never becomes false again, a single test can suffice under the notes' assumptions. For a reusable resource predicate, a newly arriving thread may acquire the owner lock before a signalled waiter: barging. The waiter must recheck, unless a correct reservation/barging protocol guarantees its turn. FIFO condition-queue wakeup alone does not prevent competition at the owner lock.
+
+`signal` wakes one FIFO waiter; `broadcast` wakes all. Both return false when nobody was waiting. Explain barging avoidance in the course's terms and distinguish it from directly passing the lock/baton as in the prevention implementations. Trace who holds the internal lock after a wakeup; some implementation sketches deliberately transfer the release obligation rather than reacquiring normally.
+
+### Bounded buffer
+
+Maintain `0 <= count <= capacity`. Producers wait for `count < capacity`; consumers wait for `count > 0` **or** a terminal poison condition. Protect front/back/count/poison and the wakeup protocol with the owner lock.
+
+- **BUSY:** after waking, a task competes for the owner lock; a barger may have consumed its item/slot. A loop rechecks the predicate. The course calls this busy waiting even though each condition wait actually blocks; distinguish this repeated waiting from a raw spinning loop.
+- **NOBUSY:** an explicit reservation/signalling protocol prevents a newcomer from stealing a signalled task's turn. A bare `while` → `if` edit is not a solution. Draw the signalled task, barger, and releasing task and explain who inherits the next turn.
+- **Poison:** after producers finish, let consumers drain remaining values. Once poisoned and empty, waiting and future consumers must terminate with Poison. Wake everyone who needs to observe termination, using broadcast or a correct wakeup chain. Never throw while accidentally retaining the owner lock.
+- **Results:** let each consumer own its subtotal, join consumers, then combine. Explain why the sum is independent of schedule even though print order and block counts can vary.
