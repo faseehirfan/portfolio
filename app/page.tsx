@@ -23,8 +23,15 @@ export default function Page() {
           Waterloo who likes making cool stuff.
         </p>
         <p>
-          I'm currently on the lookout for Winter and Summer 2026 internships.
           I've previously interned at{" "}
+          <a target="_blank" href="https://www.microsoft.com/">
+            Microsoft
+          </a>
+          {", "}
+          <a target="_blank" href="https://www.tesla.com/">
+            Tesla
+          </a>
+          {", "}
           <a target="_blank" href="https://www.wealthsimple.com/en-ca">
             Wealthsimple
           </a>
@@ -41,7 +48,7 @@ export default function Page() {
           <a target="_blank" href="https://www.constanthealth.ca/">
             Constant Health
           </a>
-          .
+          . I'm currently not open to full-time opportunities.
         </p>
         <p>
           During my free time, I enjoy playing soccer, taking photos,
