@@ -48,7 +48,8 @@ export default function Page() {
           <a target="_blank" href="https://www.constanthealth.ca/">
             Constant Health
           </a>
-          . I'm currently not open to full-time opportunities.
+          .
+          {/* I'm currently not open to full-time opportunities. */}
         </p>
         <p>
           During my free time, I enjoy playing soccer, taking photos,
